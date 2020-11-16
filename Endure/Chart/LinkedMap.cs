@@ -30,11 +30,17 @@ namespace Endure
 
         public bool IsTail(TKey key)
         {
+            if (key == null)
+                return false;
+
             return keys[key].First == null;
         }
 
         public bool IsHead(TKey key)
         {
+            if (key == null)
+                return false;
+
             return keys[key].Second == null;
         }
 
@@ -140,13 +146,15 @@ namespace Endure
 
             if (keys.ContainsKey(Tail))
             {
-                keys[Head].First = key;
+                keys[Tail].First = key;
             }
 
             Tail = key;
         }
 
-        // current key will be plased infront of origin. Will return false if origin does not exist
+        /// <summary>
+        /// current key will be plased infront of origin. Will return false if origin does not exist
+        /// </summary>
         public bool InsertFront(TKey origin, TKey currentKey, TValue value)
         {
             if(keys.ContainsKey(origin))

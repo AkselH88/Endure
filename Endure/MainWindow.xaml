@@ -6,7 +6,7 @@
         xmlns:local="clr-namespace:Endure"
         mc:Ignorable="d" FontSize="18" FontFamily="Segoe UI"
         Title="Endure" Height="450" Width="800">
-    
+
     <Grid>
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="20"/>
@@ -30,6 +30,9 @@
             <RowDefinition Height="20"/>
         </Grid.RowDefinitions>
 
+        <Button x:Name="Settings" ToolTip="Settings" Click="Settings_Click" Width="auto" Height="auto">
+            <Image Source="Resources\Icons\Settings\Settings_16x.png"></Image>
+        </Button>
         <!-- Left Side Start -->
         <ComboBox x:Name="ChartSelect" Grid.Column="1" Grid.Row="1" Grid.ColumnSpan="2" Margin="5">
             <!--<ComboBox.ItemTemplate>
@@ -39,7 +42,7 @@
             </ComboBox.ItemTemplate>-->
         </ComboBox>
 
-        <TextBox x:Name="inputWeight" Grid.Column="1" Grid.Row="2"
+        <TextBox x:Name="inputWeight" Grid.Column="1" Grid.Row="2" PreviewTextInput="TextBoxNumberValidation"
                  Width="70" Margin="5"/>
 
         <ComboBox x:Name="DropCalender" Grid.Column="2" Grid.Row="2" Width="70" Margin="5" Loaded="DropCalender_Loaded" SelectionChanged="DropCalender_SelectionChanged">
@@ -67,9 +70,6 @@
                     Loaded="Canvas_Loaded"
                     SizeChanged="Canvas_SizeChanged"
                     MouseRightButtonDown="Canvas_MouseRightButtonDown">
-
-                <Polyline
-                    x:Name="line1" Stroke="Black" StrokeThickness="2"/>
             </Canvas>
         </ScrollViewer>
 

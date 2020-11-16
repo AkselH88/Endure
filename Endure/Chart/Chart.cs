@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Endure.SubWindows;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
@@ -45,16 +46,13 @@ namespace Endure
             }
         }
 
-        public void HandelNewInput(string[] date, string inputText, Canvas canvas)
+        public bool HandelNewInput(string[] date, string inputText, Canvas canvas)
         {
-            bool dot = inputText.Contains(".");
-            bool comma = inputText.Contains(",");
-
-            if (dot && comma)
+            if (inputText == string.Empty)
             {
-                //handle error massage
+                return false;
             }
-            else if(dot)
+            else if(inputText.Contains("."))
             {
                 string[] input = inputText.Split(".");
 
@@ -66,7 +64,7 @@ namespace Endure
 
                 ellipses.Add(date, input, textOnCanvas.HorizontalTextPositions, canvas);
             }
-            else if(comma)
+            else if(inputText.Contains(","))
             {
                 string[] input = inputText.Split(",");
                 if (IsNewCommenMax(input[0]))
@@ -88,6 +86,8 @@ namespace Endure
 
                 ellipses.Add(date, input, textOnCanvas.HorizontalTextPositions, canvas);
             }
+
+            return true;
         }
 
         private bool IsNewCommenMax(string number)
@@ -158,16 +158,16 @@ namespace Endure
             get { return textOnCanvas.MinWidth(); }
         }
 
-        public void OnMoveBackward(Canvas canvas)
-        {
-            //textOnCanvas.OnMoveBackward(ellipses, canvas);
-            ellipses.OnMove(textOnCanvas.OnMoveBackward(canvas), textOnCanvas.HorizontalTextPositions, canvas);
-        }
-
         public void OnMoveForward(Canvas canvas)
         {
             //textOnCanvas.OnMoveForward(ellipses, canvas);
-            ellipses.OnMove(textOnCanvas.OnMoveForward(canvas), textOnCanvas.HorizontalTextPositions, canvas);
+            ellipses.OnMove(textOnCanvas.OnMoveForward(canvas), true, textOnCanvas.HorizontalTextPositions, canvas);
+        }
+
+        public void OnMoveBackward(Canvas canvas)
+        {
+            //textOnCanvas.OnMoveBackward(ellipses, canvas);
+            ellipses.OnMove(textOnCanvas.OnMoveBackward(canvas), false, textOnCanvas.HorizontalTextPositions, canvas);
         }
 
         public void AddLines(Canvas canvas)

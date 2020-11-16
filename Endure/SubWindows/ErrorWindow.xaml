@@ -1,0 +1,27 @@
+﻿<Window x:Class="Endure.SubWindows.ErrorWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:Endure.SubWindows"
+        mc:Ignorable="d"
+        Title="ErrorWindow" Height="250" Width="300">
+        
+    <Grid>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="20"/>
+            <ColumnDefinition Width="*"/>
+            <ColumnDefinition Width="20"/>
+        </Grid.ColumnDefinitions>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="20"/>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="20"/>
+        </Grid.RowDefinitions>
+        <TextBlock x:Name="Error_MSG" FontSize="14" Text="Error msg" FontWeight="Bold" Grid.Column="1" Grid.Row="1"/>
+        <Button x:Name="Ok" Content="Ok" Margin="5" Grid.Column="1" Grid.Row="2" Height="30" Width="80"
+                Click="Ok_Click"/>
+    </Grid>
+    
+</Window>

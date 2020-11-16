@@ -42,11 +42,11 @@ namespace Endure
         }
         public override bool Equals(object obj)
         {
-            if (null == this as object && obj == null)
+            if (this as object == null && obj == null)
                 return true;
             else if (obj == null)
                 return false;
-            else if (null == this as object)
+            else if (this as object == null)
                 return false;
 
             KeyDate Obj = obj as KeyDate;
@@ -59,7 +59,7 @@ namespace Endure
         public static bool operator >=(KeyDate a, KeyDate b) => a.MoreThan(b) || a.Equals(b);
         public static bool operator <=(KeyDate a, KeyDate b) => a.LessThan(b) || a.Equals(b);
         public static bool operator ==(KeyDate a, KeyDate b) => a.Equals(b);
-        public static bool operator !=(KeyDate a, KeyDate b) => !a.Equals(b);
+        public static bool operator !=(KeyDate a, KeyDate b) => ((object)a != (object)b && !a.Equals((object)b));
 
         private bool MoreThan(KeyDate toCompere)
         {

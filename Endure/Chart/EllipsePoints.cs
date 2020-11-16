@@ -1,161 +1,25 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Windows.Controls;
 using System.Windows.Media;
 using System.Windows.Shapes;
 
+
 namespace Endure
 {
-    public class LinesBetweenPoints
-    {
-        readonly LinkedMap<KeyDate, Line> lines = new LinkedMap<KeyDate, Line>();
-
-        readonly int StrokeThickness = 1;
-
-        bool Initialized = false;
-
-        public void Add(string key, double x, double y, Canvas canvas)
-        {
-            KeyDate Key = new KeyDate(key);
-
-            if(lines.ContainsKey(Key))
-            {
-                lines[Key].X1 = x;
-                lines[Key].Y1 = y;
-
-                if (Key == lines.Head)
-                {
-                    lines[Key].X2 = x;
-                    lines[Key].Y2 = y;
-                }
-
-                if (!lines.IsTail(Key))
-                {
-                    lines[lines.GetPrevius(Key)].X2 = x;
-                    lines[lines.GetPrevius(Key)].Y2 = y;
-                }
-            }
-            else
-            {
-                Line line = new Line
-                {
-                    StrokeThickness = this.StrokeThickness,
-                    Stroke = Brushes.Blue,
-
-                    X1 = x,
-                    Y1 = y,
-                    X2 = x,
-                    Y2 = y
-                };
-
-                if(lines.Initialized)
-                {
-                    if (Key < lines.Tail)
-                    {
-                        lines.InsertTail(Key, line);
-
-                        lines[Key].X2 = lines[lines.GetNext(Key)].X1;
-                        lines[Key].Y2 = lines[lines.GetNext(Key)].Y1;
-                    }
-                    else if (Key > lines.Head)
-                    {
-                        lines.InsertHead(Key, line);
-                    }
-                    else
-                    {
-                        KeyDate next = lines.Tail;
-                        while (next != null)
-                        {
-                            if (Key > next)
-                            {
-                                if (Key < lines.GetNext(next))
-                                {
-                                    lines.InsertFront(next, Key, line);
-
-                                    lines[Key].X2 = lines[lines.GetNext(Key)].X1;
-                                    lines[Key].Y2 = lines[lines.GetNext(Key)].Y1;
-
-                                    break;
-                                }
-                            }
-
-                            next = lines.GetNext(next);
-                        }
-                    }
-
-                    if(!lines.IsTail(Key))
-                    {
-                        lines[lines.GetPrevius(Key)].X2 = x;
-                        lines[lines.GetPrevius(Key)].Y2 = y;
-                    }
-                }
-                else
-                {
-                    lines.Initialize(Key, line);
-                    Initialized = true;
-                }
-
-                if (!canvas.Children.Contains(lines[Key]))
-                {
-                    canvas.Children.Add(lines[Key]);
-                }   
-            }
-        }
-
-        public void OnSizeChange(string key, double x, double y)
-        {
-            if(Initialized)
-            {
-                KeyDate Key = new KeyDate(key);
-
-                if(lines.ContainsKey(Key))
-                {
-                    lines[Key].X1 = x;
-                    lines[Key].Y1 = y;
-                    if(Key == lines.Head)
-                    {
-                        lines[Key].X2 = x;
-                        lines[Key].Y2 = y;
-                    }
-
-                    if (!lines.IsTail(Key))
-                    {
-                        lines[lines.GetPrevius(Key)].X2 = x;
-                        lines[lines.GetPrevius(Key)].Y2 = y;
-                    }
-                }
-            }
-        }
-
-        public Line GetLine(string key)
-        {
-            KeyDate Key = new KeyDate(key);
-
-            //if(lines.ContainsKey(Key))
-                return lines[Key];
-
-            //return null;
-        }
-
-        public Line OutOfRange(string key)
-        {
-            KeyDate Key = new KeyDate(key);
-
-            //if(lines.ContainsKey(Key))
-            return lines[Key];
-
-            //return null;
-        }
-    }
-
     public class EllipsePoints
     {
         Common common;
         readonly Dictionary<string, Ellipse> ellipses = new Dictionary<string, Ellipse>();
         readonly LinesBetweenPoints lines = new LinesBetweenPoints();
+        private bool Initialized = false;
 
         readonly int Diameter = 5;
         readonly double Radius = 2.5;
+
+        KeyDate Left;
+        KeyDate Right;
 
         public void Initialize(Common common)
         {
@@ -186,8 +50,16 @@ namespace Endure
                 }
                 else
                 {
+                    lines.Add(FullDate, Left, Right, canvas);
                     //add line hær også!!!!!!!
                     ellipses.Add(FullDate, NewEllipse(ToolTip));
+
+                    string next = lines.GetNext(FullDate);
+                    if (canvas.Children.Contains(ellipses[next]))
+                    {
+                        canvas.Children.Remove(ellipses[next]);
+                        canvas.Children.Add(ellipses[next]);
+                    }
                 }
             }
             else
@@ -202,9 +74,18 @@ namespace Endure
                     ellipses.Add(FullDate, NewEllipse(ToolTip));
                     SetEllipsePosition(ellipses[FullDate], FullDate, horizontalPositions[FullDate], canvas);
 
+                    string next = lines.GetNext(FullDate);
+                    if(canvas.Children.Contains(ellipses[next]))
+                    {
+                        canvas.Children.Remove(ellipses[next]);
+                        canvas.Children.Add(ellipses[next]);
+                    }
+
                     canvas.Children.Add(ellipses[FullDate]);
                 }
-            }   
+            }
+
+            UpdateFrontAndBack();
         }
 
         private void SetEllipsePosition(Ellipse ellipse, string key, double position, Canvas canvas)
@@ -213,7 +94,7 @@ namespace Endure
             double Top = ((common.Height - 2 * common.Offset) / common.CurrentMax) * (common.CurrentMax - double.Parse($"{text[0]},{text[1]}")) + common.FontSize + Radius;
             double Left = position + common.FontSize;
 
-            lines.Add(key, Left, Top + Radius, canvas);
+            lines.Add(key, Right, Left, Top + Radius, canvas);
 
             Canvas.SetTop(ellipse, Top);
             Canvas.SetLeft(ellipse, Left - Radius);
@@ -231,9 +112,15 @@ namespace Endure
             Canvas.SetLeft(ellipse, Left - Radius);
         }
 
+
         public void ReDraw(Dictionary<string, double> horizontalPositions, Canvas canvas)
         {
-            foreach(var position in horizontalPositions)
+            if(lines.DrawTail(Left, out Line tail))
+            {
+                canvas.Children.Add(tail);
+            }
+
+            foreach (var position in horizontalPositions)
             {
                 if(ellipses.ContainsKey(position.Key))
                 {
@@ -243,36 +130,44 @@ namespace Endure
             }
         }
 
-        private void ReaplyEllipseToCanvas(string date, Canvas canvas)
+        private void ReaplyEllipseToCanvas(string date, bool moveForward, Canvas canvas)
         {
             if (ellipses.ContainsKey(date))
             {
-                canvas.Children.Add(lines.GetLine(date));
+                lines.GetLine(date, moveForward, canvas);
                 canvas.Children.Add(ellipses[date]);
             }
         }
 
-        private void EllipseOutOfRange(string date, Canvas canvas)
+        private void EllipseOutOfRange(string date, bool moveForward, Canvas canvas)
         {
             if (ellipses.ContainsKey(date))
             {
-                canvas.Children.Remove(lines.OutOfRange(date));
+                // make lines void. send in canvas and aply head line / tail line ore create them from the start and only change them after .OutOfRange (i like the lather) 
+                lines.OutOfRange(date, moveForward, canvas);
                 canvas.Children.Remove(ellipses[date]);
             }
         }
 
-        public void OnMove(string[] removeAndAdd, Dictionary<string, double> horizontalPositions, Canvas canvas)
+        public void OnMove(string[] removeAndAdd, bool moveForward, Dictionary<string, double> horizontalPositions, Canvas canvas)
         {
-            EllipseOutOfRange(removeAndAdd[0], canvas);
-            ReaplyEllipseToCanvas(removeAndAdd[1], canvas);
+            EllipseOutOfRange(removeAndAdd[0], moveForward, canvas);
+            ReaplyEllipseToCanvas(removeAndAdd[1], moveForward, canvas);
 
-            foreach(var position in horizontalPositions)
+            foreach (var position in horizontalPositions)
             {
                 if(ellipses.ContainsKey(position.Key))
                 {
                     SetEllipsePosition(ellipses[position.Key], position.Key, horizontalPositions[position.Key]);
                 }
             }
+
+            if(moveForward)
+                UpdateLeftAndRight(horizontalPositions.Keys.First(), horizontalPositions.Keys.Last());
+            else
+                UpdateLeftAndRight(horizontalPositions.Keys.Last(), horizontalPositions.Keys.First());
+
+            UpdateFrontAndBack();
         }
 
         public void OnSizeChange(Dictionary<string, double> horizontalPositions)
@@ -283,6 +178,40 @@ namespace Endure
                 {
                     SetEllipsePosition(ellipses[position.Key], position.Key, horizontalPositions[position.Key]);
                 }
+            }
+            if(!Initialized)
+            {
+                Left = new KeyDate(horizontalPositions.Keys.First());
+                Right = new KeyDate(horizontalPositions.Keys.Last());
+
+                Initialized = true;
+            }
+
+            UpdateFrontAndBack();
+        }
+
+        private void UpdateLeftAndRight(string left, string right)
+        {
+            Left.SetFullDate(left);
+            Right.SetFullDate(right);
+        }
+
+        private double TopLine(string key)
+        {
+            string[] text = ellipses[key].ToolTip.ToString().Split(" ")[1].Split(".");
+            return ((common.Height - 2 * common.Offset) / common.CurrentMax) * (common.CurrentMax - double.Parse($"{text[0]},{text[1]}")) + common.FontSize + 2 * Radius;
+        }
+
+        private void UpdateFrontAndBack()
+        {
+            if (lines.HeadNeedUpdate(out string key, Left, Right))
+            {
+                lines.UpdateHead(TopLine(key), ((common.Width - 2 * common.Offset) / common.HorizontalElements), common.Offset, Left, Right);
+            }
+
+            if (lines.TailNeedUpdate(out key, Left, Right))
+            {
+                lines.UpdateTail(TopLine(key), ((common.Width - 2 * common.Offset) / common.HorizontalElements), common.Offset, Left, Right);
             }
         }
     }
