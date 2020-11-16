@@ -204,14 +204,14 @@ namespace Endure
 
         private void UpdateFrontAndBack()
         {
-            if (lines.HeadNeedUpdate(out string key, Left, Right))
+            if (lines.HeadNeedUpdate(out string key, Right))
             {
                 lines.UpdateHead(TopLine(key), ((common.Width - 2 * common.Offset) / common.HorizontalElements), common.Offset, Left, Right);
             }
 
-            if (lines.TailNeedUpdate(out key, Left, Right))
+            if (lines.TailNeedUpdate(out key, Left))
             {
-                lines.UpdateTail(TopLine(key), ((common.Width - 2 * common.Offset) / common.HorizontalElements), common.Offset, Left, Right);
+                lines.UpdateTail(TopLine(key), ((common.Width - 2 * common.Offset) / common.HorizontalElements), common.Offset);
             }
         }
     }

@@ -58,8 +58,7 @@ namespace Endure
 
                 if (IsNewCommenMax(input[0]))
                 {
-                    textOnCanvas.UpdateText();
-                    ellipses.OnSizeChange(textOnCanvas.HorizontalTextPositions);
+                    UpdateChartForeNewInput();
                 }
 
                 ellipses.Add(date, input, textOnCanvas.HorizontalTextPositions, canvas);
@@ -69,8 +68,7 @@ namespace Endure
                 string[] input = inputText.Split(",");
                 if (IsNewCommenMax(input[0]))
                 {
-                    textOnCanvas.UpdateText();
-                    ellipses.OnSizeChange(textOnCanvas.HorizontalTextPositions);
+                    UpdateChartForeNewInput();
                 }
 
                 ellipses.Add(date, input, textOnCanvas.HorizontalTextPositions, canvas);
@@ -80,14 +78,20 @@ namespace Endure
                 string[] input = { inputText, "00" };
                 if (IsNewCommenMax(inputText))
                 {
-                    textOnCanvas.UpdateText();
-                    ellipses.OnSizeChange(textOnCanvas.HorizontalTextPositions);
+                    UpdateChartForeNewInput();
                 }
 
                 ellipses.Add(date, input, textOnCanvas.HorizontalTextPositions, canvas);
             }
 
             return true;
+        }
+
+        private void UpdateChartForeNewInput()
+        {
+            textOnCanvas.UpdateText();
+            Lines.OnSizeChange(textOnCanvas.VertivalTextPosition, textOnCanvas.HorizontalTextPositions.Values.ToList());
+            ellipses.OnSizeChange(textOnCanvas.HorizontalTextPositions);
         }
 
         private bool IsNewCommenMax(string number)

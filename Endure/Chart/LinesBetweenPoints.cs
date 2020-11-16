@@ -268,7 +268,7 @@ namespace Endure
             }
         }
 
-        public bool TailNeedUpdate(out string key, KeyDate left, KeyDate right)
+        public bool TailNeedUpdate(out string key, KeyDate left)
         {
             key = string.Empty;
             if (Initialized)
@@ -285,7 +285,7 @@ namespace Endure
         /// <summary>
         /// x0 is the x offset from origo
         /// </summary>
-        public void UpdateTail(double y, double pxShifted, double x0, KeyDate left, KeyDate right)
+        public void UpdateTail(double y, double pxShifted, double x0)
         {
             double P = (lines[TailKey].X2 - x0) / (DistanseX(TailKey, lines.GetNext(TailKey)) * pxShifted);
             lines[TailKey].X1 = lines[TailKey].X2 - DistanseX(TailKey, lines.GetNext(TailKey)) * pxShifted * P;
@@ -306,7 +306,7 @@ namespace Endure
             }
         }
 
-        public bool HeadNeedUpdate(out string key, KeyDate left, KeyDate right)
+        public bool HeadNeedUpdate(out string key, KeyDate right)
         {
             key = string.Empty;
             if (Initialized)

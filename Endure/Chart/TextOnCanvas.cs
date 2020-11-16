@@ -16,6 +16,7 @@ using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
+using System.Diagnostics;
 
 namespace Endure
 {
@@ -41,7 +42,7 @@ namespace Endure
             if(!Initialized)
             {
                 this.common = common;
-                DayOffset = common.HorizontalElements;
+                DayOffset = -common.HorizontalElements;
 
                 InitializeVerticalText(canvas);
                 InitializeHorizontalText(canvas);
@@ -61,7 +62,7 @@ namespace Endure
                 {
                     Text = $"{i}",
                     FontSize = common.FontSize,
-                    Width = common.FontSize,
+                    Width = common.VerticalOffset,
                     TextAlignment = TextAlignment.Right,
                     Foreground = new SolidColorBrush(Color.FromRgb(0, 0, 0))
                 };
@@ -78,7 +79,7 @@ namespace Endure
 
         void InitializeHorizontalText(Canvas canvas)
         {
-            double width = canvas.ActualWidth - 2 * common.Offset;
+            double width = canvas.ActualWidth - (common.Offset + common.VerticalStartPos);
             double height = canvas.ActualHeight - 2 * common.Offset;
 
             HorizontalPixelSeperator = width / common.HorizontalElements;
@@ -86,17 +87,19 @@ namespace Endure
 
             for (int i = 0; i <= common.HorizontalElements; i++)
             {
+                DayOffset++;
+
                 TextBlock textBlock = new TextBlock
                 {
-                    ToolTip = $"{DateTime.Today.AddDays(i).Month}.{DateTime.Today.AddDays(i).Year}",
-                    Text = $"{DateTime.Today.AddDays(i).Day}",
+                    ToolTip = $"{DateTime.Today.AddDays(DayOffset).Month}.{DateTime.Today.AddDays(DayOffset).Year}",
+                    Text = $"{DateTime.Today.AddDays(DayOffset).Day}",
                     FontSize = common.FontSize,
                     Width = 2 * common.FontSize,
                     TextAlignment = TextAlignment.Center,
                     Foreground = new SolidColorBrush(Color.FromRgb(0, 0, 0))
                 };
 
-                Canvas.SetLeft(textBlock, common.Offset + HorizontalPixelSeperator * i - common.FontSize);
+                Canvas.SetLeft(textBlock, common.VerticalStartPos + HorizontalPixelSeperator * i - common.FontSize);
                 Canvas.SetTop(textBlock, height + common.Offset);
 
                 canvas.Children.Add(textBlock);
@@ -214,7 +217,7 @@ namespace Endure
             if(Initialized)
             { 
                 double height = common.Height - 2 * common.Offset;
-                double width = common.Width - 2 * common.Offset;
+                double width = common.Width - (common.Offset + common.VerticalStartPos);
 
                 VerticalPixelSeperator = height / common.VerticalElements;
                 HorizontalPixelSeperator = width / common.HorizontalElements;
@@ -229,7 +232,7 @@ namespace Endure
                 }
                 foreach (TextBlock text in horizontalText)
                 {
-                    double horisontalPosition = width * horizontalText.IndexOf(text) / common.HorizontalElements + common.Offset - common.FontSize;
+                    double horisontalPosition = width * horizontalText.IndexOf(text) / common.HorizontalElements + common.VerticalStartPos - common.FontSize;
 
                     Canvas.SetTop(text, height + common.Offset);
                     Canvas.SetLeft(text, horisontalPosition);
@@ -290,10 +293,21 @@ namespace Endure
                 verticalText.Add(text);
                 canvas.Children.Add(text);
             }*/
+            TextBlock tempBox = new TextBlock
+            {
+                FontSize = common.FontSize,
+                Text = $"{common.CurrentMax}"
+            };
+
+            tempBox.Measure(new Size(Double.PositiveInfinity, Double.PositiveInfinity));
+            tempBox.Arrange(new Rect(tempBox.DesiredSize));
+            common.VerticalOffset = tempBox.ActualWidth;
+
             double scale = common.CurrentMax / common.VerticalElements;
             foreach (TextBlock block in verticalText)
             {
                 block.Text = $"{scale * verticalText.IndexOf(block)}";
+                block.Width = common.VerticalOffset;
             }
         }
         
