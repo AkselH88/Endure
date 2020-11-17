@@ -56,32 +56,38 @@ namespace Endure
             {
                 string[] input = inputText.Split(".");
 
-                if (IsNewCommenMax(input[0]))
+                /*if (IsNewCommenMax(input[0]))
                 {
                     UpdateChartForeNewInput();
-                }
+                }*/
 
                 ellipses.Add(date, input, textOnCanvas.HorizontalTextPositions, canvas);
             }
             else if(inputText.Contains(","))
             {
                 string[] input = inputText.Split(",");
-                if (IsNewCommenMax(input[0]))
+                /*if (IsNewCommenMax(input[0]))
                 {
                     UpdateChartForeNewInput();
-                }
+                }*/
 
                 ellipses.Add(date, input, textOnCanvas.HorizontalTextPositions, canvas);
             }
             else
             {
                 string[] input = { inputText, "00" };
-                if (IsNewCommenMax(inputText))
+                /*if (IsNewCommenMax(inputText))
                 {
                     UpdateChartForeNewInput();
-                }
+                }*/
 
                 ellipses.Add(date, input, textOnCanvas.HorizontalTextPositions, canvas);
+            }
+
+            if (common.Update)
+            {
+                UpdateChartForeNewInput();
+                common.Update = false;
             }
 
             return true;
@@ -166,12 +172,22 @@ namespace Endure
         {
             //textOnCanvas.OnMoveForward(ellipses, canvas);
             ellipses.OnMove(textOnCanvas.OnMoveForward(canvas), true, textOnCanvas.HorizontalTextPositions, canvas);
+            if (common.Update)
+            {
+                UpdateChartForeNewInput();
+                common.Update = false;
+            }
         }
 
         public void OnMoveBackward(Canvas canvas)
         {
             //textOnCanvas.OnMoveBackward(ellipses, canvas);
             ellipses.OnMove(textOnCanvas.OnMoveBackward(canvas), false, textOnCanvas.HorizontalTextPositions, canvas);
+            if (common.Update)
+            {
+                UpdateChartForeNewInput();
+                common.Update = false;
+            }
         }
 
         public void AddLines(Canvas canvas)

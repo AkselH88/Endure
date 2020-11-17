@@ -266,33 +266,6 @@ namespace Endure
 
         public void UpdateText()
         {
-            /* its not neaded to clear the list atm, it will be needed if the verticalSeperetor get changed. for now its god enuf to just change the text.. 
-            foreach (var list in verticalText)
-            {
-                canvas.Children.Remove(list);
-            }
-
-            verticalText.Clear();
-
-            double scale = CurrentMax / verticalSeperator;
-
-            for (int i = 0; i <= verticalSeperator; i++)
-            {
-                TextBlock text = new TextBlock
-                {
-                    Text = $"{scale * i}",
-                    FontSize = this.FontSize,
-                    Width = this.FontSize,
-                    TextAlignment = TextAlignment.Right,
-                    Foreground = new SolidColorBrush(Color.FromRgb(0, 0, 0))
-                };
-
-                Canvas.SetTop(text, VerticalPixelSeperator * (verticalSeperator - i) + FontSize / 2);
-                Canvas.SetLeft(text, 0);
-
-                verticalText.Add(text);
-                canvas.Children.Add(text);
-            }*/
             TextBlock tempBox = new TextBlock
             {
                 FontSize = common.FontSize,
@@ -303,27 +276,14 @@ namespace Endure
             tempBox.Arrange(new Rect(tempBox.DesiredSize));
             common.VerticalOffset = tempBox.ActualWidth;
 
-            double scale = common.CurrentMax / common.VerticalElements;
+            double maxScale = common.CurrentMax / common.VerticalElements;
+            double minScale = common.CurrentMin / common.VerticalElements;
+            double scale = (common.CurrentMax - common.CurrentMin) / common.VerticalElements;
             foreach (TextBlock block in verticalText)
             {
-                block.Text = $"{scale * verticalText.IndexOf(block)}";
+                block.Text = $"{common.CurrentMin + scale * verticalText.IndexOf(block)}";
                 block.Width = common.VerticalOffset;
             }
         }
-        
-        /*public double GetHorizontalPosition(string[] date)
-        {
-            string ToCompereToolTip = $"{int.Parse(date[1])}.{date[2]}";
-
-            foreach (TextBlock text in horizontalText)
-            {
-                if (text.ToolTip.ToString() == ToCompereToolTip && text.Text == $"{int.Parse(date[0])}")
-                {
-                    return Canvas.GetLeft(text);
-                }
-            }
-
-            return -1;
-        }*/
     }
 }

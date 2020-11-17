@@ -12,8 +12,8 @@ namespace Endure
 
         readonly int StrokeThickness = 1;
         // Head and Tail Key is only relevent for whats on desplay.
-        private KeyDate HeadKey;
-        private KeyDate TailKey;
+        public KeyDate HeadKey { get; private set; }
+        public KeyDate TailKey { get; private set; }
 
         bool Initialized = false;
 
@@ -45,21 +45,8 @@ namespace Endure
                     else
                     {
                         KeyDate next = lines.Tail;
-                        while (next != null)
+                        while(!FindPoint(Key, next, line))
                         {
-                            if (Key > next)
-                            {
-                                if (Key < lines.GetNext(next))
-                                {
-                                    lines.InsertFront(next, Key, line);
-
-                                    lines[Key].X2 = lines[lines.GetNext(Key)].X1;
-                                    lines[Key].Y2 = lines[lines.GetNext(Key)].Y1;
-
-                                    break;
-                                }
-                            }
-
                             next = lines.GetNext(next);
                         }
                     }
@@ -108,12 +95,38 @@ namespace Endure
 
         }
 
+        private bool FindPoint(KeyDate key, KeyDate next, Line line)
+        {
+            if (key > next)
+            {
+                if (key < lines.GetNext(next))
+                {
+                    lines.InsertFront(next, key, line);
+
+                    lines[key].X2 = lines[lines.GetNext(key)].X1;
+                    lines[key].Y2 = lines[lines.GetNext(key)].Y1;
+
+                    return true;
+                }
+            }
+
+            return false;
+        }
+
         public string GetNext(string key)
         {
             KeyDate Key = new KeyDate(key);
 
             if (!lines.IsHead(Key))
                 return lines.GetNext(Key).ToString();
+            else
+                return key;
+        }
+
+        public KeyDate GetNext(KeyDate key)
+        {
+            if (!lines.IsHead(key))
+                return lines.GetNext(key);
             else
                 return key;
         }
@@ -153,25 +166,12 @@ namespace Endure
                     else
                     {
                         KeyDate next = lines.Tail;
-                        while (next != null)
+                        while (!FindPoint(Key, next, line))
                         {
-                            if (Key > next)
-                            {
-                                if (Key < lines.GetNext(next))
-                                {
-                                    lines.InsertFront(next, Key, line);
-
-                                    lines[Key].X2 = lines[lines.GetNext(Key)].X1;
-                                    lines[Key].Y2 = lines[lines.GetNext(Key)].Y1;
-
-                                    break;
-                                }
-                            }
-
                             next = lines.GetNext(next);
                         }
 
-                        if(Key > HeadKey)
+                        if (Key > HeadKey)
                         {
                             HeadKey = Key;
                         }
@@ -339,9 +339,6 @@ namespace Endure
                 {
                     lines[lines.GetPrevius(HeadKey)].X2 = x0 + DistanseX(left, HeadKey) * pxShifted;
                     lines[lines.GetPrevius(HeadKey)].Y2 = y;
-                    //HeadKey = lines.GetPrevius(HeadKey);
-                    //UpdateHead(y, pxShifted, x0, left, right);
-                    //lines[HeadKey].X2 = lines[HeadKey].X1 + DistanseX(HeadKey, lines.GetNext(HeadKey)) * pxShifted;
                 }
                 else
                 {

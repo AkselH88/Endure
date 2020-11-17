@@ -32,6 +32,8 @@ namespace Endure
         public double Height { get; private set; }
         public double Width { get; private set; }
 
+        public bool Update { get; set; }
+
         public void RevertToDefoult()
         {
             this.Offset = Defoult.Offset;
