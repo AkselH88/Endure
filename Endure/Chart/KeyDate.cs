@@ -54,11 +54,11 @@ namespace Endure
             return (Day == Obj.Day && Month == Obj.Month && Year == Obj.Year);
         }
 
-        public static bool operator >(KeyDate a, KeyDate b) => a.MoreThan(b);
-        public static bool operator <(KeyDate a, KeyDate b) => a.LessThan(b);
-        public static bool operator >=(KeyDate a, KeyDate b) => a.MoreThan(b) || a.Equals(b);
-        public static bool operator <=(KeyDate a, KeyDate b) => a.LessThan(b) || a.Equals(b);
-        public static bool operator ==(KeyDate a, KeyDate b) => a.Equals(b);
+        public static bool operator >(KeyDate a, KeyDate b) => /*(object)a != null && (object)b != null &&*/ a.MoreThan(b);
+        public static bool operator <(KeyDate a, KeyDate b) => /*(object)a != null && (object)b != null &&*/ a.LessThan(b);
+        public static bool operator >=(KeyDate a, KeyDate b) => /*(object)a != null && (object)b != null &&*/ (a.MoreThan(b) || a.Equals(b));
+        public static bool operator <=(KeyDate a, KeyDate b) => /*(object)a != null && (object)b != null &&*/ (a.LessThan(b) || a.Equals(b));
+        public static bool operator ==(KeyDate a, KeyDate b) => /*(object)a != null && (object)b != null &&*/ a.Equals(b);
         public static bool operator !=(KeyDate a, KeyDate b) => ((object)a != (object)b && !a.Equals((object)b));
 
         private bool MoreThan(KeyDate toCompere)

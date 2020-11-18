@@ -67,7 +67,8 @@
             <Canvas x:Name="canvas" Height="auto" Width="auto"
                     Loaded="Canvas_Loaded"
                     SizeChanged="Canvas_SizeChanged"
-                    MouseRightButtonDown="Canvas_MouseRightButtonDown">
+                    MouseRightButtonDown="Canvas_MouseRightButtonDown"
+                    MouseLeftButtonDown="Canvas_MouseLeftButtonDown">
             </Canvas>
         </ScrollViewer>
 

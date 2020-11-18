@@ -64,13 +64,30 @@ namespace Endure.DataAccess
             }
         }
 
-        public static List<(string, string)> LoadTable(string key)
+        public static List<List<string>> LoadTable(string key, List<string> colomns)
         {
             using (IDbConnection cnn = new SQLiteConnection(ConnectionString))
             {
-                var output = cnn.Query<(string, string)>($"SELECT * FROM '{key}';", new DynamicParameters());
+                List<List<string>> asColomns = new List<List<string>>();
+                List<List<string>> asRows = new List<List<string>>();
+                foreach (string colomn in colomns)
+                {
+                    var output = cnn.Query<string>($"SELECT {colomn} FROM '{key}';", new DynamicParameters());
 
-                return output.ToList();
+                    asColomns.Add(output.ToList());
+                    
+                }
+
+                for (int i = 0; i < asColomns[0].Count; i++)
+                {
+                    asRows.Add(new List<string>());
+                    for (int j = 0; j < asColomns.Count; j++)
+                    {
+                        asRows[i].Add(asColomns[j][i]);
+                    }
+                }
+
+                return asRows;
             }
         }
 
@@ -83,15 +100,24 @@ namespace Endure.DataAccess
             }
         }
 
-        public static void SaveToTable(string key, string[] values)
+        public static List<string> GetColomns(string table)
+        {
+            using (IDbConnection cnn = new SQLiteConnection(ConnectionString))
+            {
+                var output = cnn.Query<string>($"SELECT name FROM PRAGMA_TABLE_INFO('{table}');", new DynamicParameters());
+                return output.ToList();
+            }
+        }
+
+        public static void SaveToTable(string key, List<string> values)
         {
             using (IDbConnection cnn = new SQLiteConnection(ConnectionString))
             {
                 string table = $"INSERT INTO '{key}' VALUES (";
-                for (int i = 0; i < values.Length; i++)
+                for (int i = 0; i < values.Count; i++)
                 {
                     table += $"'{values[i]}'";
-                    if (values[i] == values[^1])
+                    if (i == values.Count -1)
                         table += ");";
                     else
                         table += ", ";

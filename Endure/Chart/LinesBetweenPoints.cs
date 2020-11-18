@@ -394,7 +394,6 @@ namespace Endure
                     TailKey = Key;
                 }
             }
-            
         }
 
         public void OutOfRange(string key, bool moveForward, Canvas canvas)
@@ -422,7 +421,6 @@ namespace Endure
 
                 canvas.Children.Remove(lines[Key]);
             }
-            
         }
     }
 }

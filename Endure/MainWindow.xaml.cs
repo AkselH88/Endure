@@ -20,6 +20,8 @@ using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
 using System.ComponentModel.Design;
+using System.Diagnostics;
+
 
 using Endure.DataAccess;
 using Endure.SubWindows;
@@ -33,10 +35,9 @@ namespace Endure
     public partial class MainWindow : Window
     {
         public Dictionary<string, Chart> charts = new Dictionary<string, Chart>();
-        //public IObservable Observable;
 
         string selectedDate = string.Empty;
-        string currentChart;// = string.Empty;
+        string currentChart;
         bool InsertRightPanel = true;
         
         public MainWindow()
@@ -48,36 +49,6 @@ namespace Endure
             ChartSelect.ItemsSource = charts.Keys;
             ChartSelect.SelectedItem = charts.First().Key;
             ChartSelect.SelectionChanged += ChartSelect_SelectionChanged;
-
-            RightPanel.Children.Add(CreateTextBlock("Weight"));
-            RightPanel.Children.Add(CreateTextBox("Weight"));
-            LeftPanel.Children.Add(CreateTextBlock("Reps"));
-            LeftPanel.Children.Add(CreateTextBox("Reps"));
-        }
-
-        private TextBox CreateTextBox(string name)
-        {
-            TextBox box = new TextBox
-            {
-                Name = name,
-                Width = 70,
-                Height = 25,
-            };
-
-            box.PreviewTextInput += TextBoxNumberValidation;
-
-            return box;
-        }
-
-        private TextBlock CreateTextBlock(string name)
-        {
-            return new TextBlock
-            {
-                Text = name,
-                FontSize = 14,
-                FontWeight = FontWeights.DemiBold,
-                HorizontalAlignment = HorizontalAlignment.Center
-            };
         }
 
         public void InitializeCharts()
@@ -89,14 +60,35 @@ namespace Endure
                     charts.Add(table, new Chart());
 
                     charts[table].Initialize(canvas);
-                    foreach (var dataSet in SQLiteDataAccess.LoadTable(table))
+
+                    List<string> colomns = new List<string>();
+                    foreach (string colomn in SQLiteDataAccess.GetColomns(table))
                     {
-                        // HandleInputFromDB
-                        charts[table].HandelNewInput(dataSet.Item1.Split("."), dataSet.Item2, canvas);
+                        colomns.Add(colomn);
+                        if(colomn != "Date")
+                            charts[table].AddInput(colomn);
                     }
+
+                    charts[table].HandelInputFromDB(SQLiteDataAccess.LoadTable(table, colomns), canvas);
                 }
 
                 currentChart = charts.First().Key;
+
+                foreach(var set in charts[currentChart].panelInput.Elements)
+                {
+                    if(InsertRightPanel)
+                    {
+                        RightPanel.Children.Add(set.Item1);
+                        RightPanel.Children.Add(set.Item2);
+                        InsertRightPanel = false;
+                    }
+                    else
+                    {
+                        LeftPanel.Children.Add(set.Item1);
+                        LeftPanel.Children.Add(set.Item2);
+                        InsertRightPanel = true;
+                    }
+                }
 
                 charts[currentChart].RemoveFromCanvas(canvas);
                 charts[currentChart].DrawOnCanvas(canvas);
@@ -108,14 +100,33 @@ namespace Endure
                 charts.Add("Dead Lift", new Chart());
                 charts.Add("Squats", new Chart());
 
-                string[] colomns = { "Date", "Value" };
-
                 foreach(var chart in charts)
                 {
-                    SQLiteDataAccess.CreateTable(chart.Key, colomns);
+                    chart.Value.AddInput("Weight");
+                    chart.Value.AddInput("Reps");
+
+                    string[] test = chart.Value.Inputs.ToArray();
+
+                    SQLiteDataAccess.CreateTable(chart.Key, test);
                 }
 
                 currentChart = charts.First().Key;
+
+                foreach (var set in charts[currentChart].panelInput.Elements)
+                {
+                    if (InsertRightPanel)
+                    {
+                        RightPanel.Children.Add(set.Item1);
+                        RightPanel.Children.Add(set.Item2);
+                        InsertRightPanel = false;
+                    }
+                    else
+                    {
+                        LeftPanel.Children.Add(set.Item1);
+                        LeftPanel.Children.Add(set.Item2);
+                        InsertRightPanel = true;
+                    }
+                }
             }
         }
 
@@ -124,15 +135,48 @@ namespace Endure
             ComboBox comboBox = sender as ComboBox;
 
             charts[currentChart].RemoveFromCanvas(canvas);
-
+            RightPanel.Children.Clear();
+            LeftPanel.Children.Clear();
             currentChart = comboBox.SelectedItem.ToString();
             if(charts[currentChart].IsInitialized)
             {
                 charts[currentChart].DrawOnCanvas(canvas);
+
+                foreach(var set in charts[currentChart].panelInput.Elements)
+                {
+                    if(InsertRightPanel)
+                    {
+                        RightPanel.Children.Add(set.Item1);
+                        RightPanel.Children.Add(set.Item2);
+                        InsertRightPanel = false;
+                    }
+                    else
+                    {
+                        LeftPanel.Children.Add(set.Item1);
+                        LeftPanel.Children.Add(set.Item2);
+                        InsertRightPanel = true;
+                    }
+                }
             }
             else
             {
                 charts[currentChart].Initialize(canvas);
+
+                foreach (var set in charts[currentChart].panelInput.Elements)
+                {
+                    if (InsertRightPanel)
+                    {
+                        RightPanel.Children.Add(set.Item1);
+                        RightPanel.Children.Add(set.Item2);
+                        InsertRightPanel = false;
+                    }
+                    else
+                    {
+                        LeftPanel.Children.Add(set.Item1);
+                        LeftPanel.Children.Add(set.Item2);
+                        InsertRightPanel = true;
+                    }
+                }
             }
 
             if(charts[currentChart].DrawChartLines)
@@ -145,44 +189,20 @@ namespace Endure
             }
         }
 
-        private void TextBoxNumberValidation(object sender, TextCompositionEventArgs e)
-        {
-            TextBox textBox = sender as TextBox;
-            if (textBox.Text.Contains('.') || textBox.Text.Contains(',') || textBox.Text == string.Empty)
-            {
-                Regex regex = new Regex("[^0-9]+");
-                e.Handled = regex.IsMatch(e.Text);
-            }
-            else
-            {
-                Regex regex = new Regex("[^0-9,.]+");
-                e.Handled = regex.IsMatch(e.Text);
-            }
-        }
-
         private void AddToChart_Click(object sender, RoutedEventArgs e)
         {
             string[] date = chosen_date.Text.Split(".");
 
-            foreach (object child in RightPanel.Children)
+            if (!charts[currentChart].HandelNewInput(date, out List<string> textFialds, canvas))
             {
-                if (child is TextBox)
-                {
-                    TextBox textBox = child as TextBox;
-                    if (!charts[currentChart].HandelNewInput(date, textBox.Text, canvas))
-                    {
-                        ErrorWindow errorWindow = new ErrorWindow("Input Error", "You need to insert a number. Ex: <4>, <12.3>, <5,1> etz...");
-                        errorWindow.Owner = this;
-                        errorWindow.ShowDialog();
-                    }
-                    else
-                    {
-                        string[] toDB = { chosen_date.Text, textBox.Text };
-                        SQLiteDataAccess.SaveToTable(currentChart, toDB);
-                    }
-
-                    textBox.Text = "";
-                }
+                ErrorWindow errorWindow = new ErrorWindow("Input Error", "You need to insert a number. Ex: <4>, <12.3>, <5,1> etz...");
+                errorWindow.Owner = this;
+                errorWindow.ShowDialog();
+            }
+            else
+            {
+                textFialds.Insert(0, chosen_date.Text);
+                SQLiteDataAccess.SaveToTable(currentChart, textFialds);
             }
         }
 
@@ -233,6 +253,11 @@ namespace Endure
         private void scroll_right_Click(object sender, RoutedEventArgs e)
         {
             charts[currentChart].OnMoveForward(canvas);
+        }
+
+        private void Canvas_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
+        {
+            Debug.WriteLine(e.GetPosition(sender as Canvas));
         }
 
         private void Canvas_MouseRightButtonDown(object sender, MouseButtonEventArgs e)
