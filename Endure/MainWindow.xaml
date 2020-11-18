@@ -13,14 +13,12 @@
             <ColumnDefinition Width="auto"/>
             <ColumnDefinition Width="auto"/>
             <ColumnDefinition Width="auto"/>
-            <ColumnDefinition Width="auto"/>
             <ColumnDefinition Width="*"/>
             <ColumnDefinition Width="auto"/>
             <ColumnDefinition Width="20"/>
         </Grid.ColumnDefinitions>
         <Grid.RowDefinitions>
             <RowDefinition Height="20"/>
-            <RowDefinition Height="auto"/>
             <RowDefinition Height="auto"/>
             <RowDefinition Height="auto"/>
             <RowDefinition Height="auto"/>
@@ -34,46 +32,46 @@
             <Image Source="Resources\Icons\Settings\Settings_16x.png"></Image>
         </Button>
         <!-- Left Side Start -->
-        <ComboBox x:Name="ChartSelect" Grid.Column="1" Grid.Row="1" Grid.ColumnSpan="2" Margin="5">
-            <!--<ComboBox.ItemTemplate>
-                <DataTemplate>
-                    <TextBlock Text="{Binding ChartName}"/>
-                </DataTemplate>
-            </ComboBox.ItemTemplate>-->
-        </ComboBox>
 
-        <TextBox x:Name="inputWeight" Grid.Column="1" Grid.Row="2" PreviewTextInput="TextBoxNumberValidation"
-                 Width="70" Margin="5"/>
+        <ComboBox x:Name="ChartSelect" Grid.Column="1" Grid.Row="1" Grid.ColumnSpan="2" Margin="5" Width="auto"/>
 
-        <ComboBox x:Name="DropCalender" Grid.Column="2" Grid.Row="2" Width="70" Margin="5" Loaded="DropCalender_Loaded" SelectionChanged="DropCalender_SelectionChanged">
-            <TextBlock x:Name="chosen_date"/>
-            <Calendar x:Name="calender" SelectedDatesChanged="Calender_SelectedDatesChanged"/>
-        </ComboBox>
-        
-        <Button x:Name="AddToChart" Content="Add" Margin="5" Grid.Column="1" Grid.Row="3" Grid.ColumnSpan="2"
+        <StackPanel x:Name="InputDatePanel" Margin="5" Grid.Row="2" Grid.Column="1" Grid.ColumnSpan="2">
+            <TextBlock Text="date" FontSize="14" FontWeight="DemiBold" HorizontalAlignment="Center"/>
+            <ComboBox x:Name="DropCalender" Width="auto"
+                      Loaded="DropCalender_Loaded" SelectionChanged="DropCalender_SelectionChanged">
+                <TextBlock x:Name="chosen_date"/>
+                <Calendar x:Name="calender" SelectedDatesChanged="Calender_SelectedDatesChanged"/>
+            </ComboBox>
+        </StackPanel>
+
+        <StackPanel x:Name="RightPanel" Grid.Row="3" Grid.Column="1" Orientation="Vertical" VerticalAlignment="Top" Margin="5" Height="auto"/>
+
+        <StackPanel x:Name="LeftPanel" Grid.Row="3" Grid.Column="2" Orientation="Vertical" VerticalAlignment="Top" Margin="5" Height="auto"/>
+
+
+        <Button x:Name="AddToChart" Content="Add" Margin="5" Grid.Column="1" Grid.Row="4" Grid.ColumnSpan="2"
                 Click="AddToChart_Click"/>
 
-        <CheckBox x:Name="LineCheck" Grid.Column="1" Grid.Row="4" Margin="5" Grid.ColumnSpan="2" HorizontalAlignment="Center"
+        <CheckBox x:Name="LineCheck" Grid.Column="1" Grid.Row="5" Margin="5" Grid.ColumnSpan="2" HorizontalAlignment="Center"
                   Checked="Line_CheckBox_Checked" Unchecked="Line_CheckBox_Unchecked">
             <TextBlock FontSize="12" Text="Draw lines" FontWeight="Bold"/>
         </CheckBox>
 
         <!-- Left Side End! -->
 
-        <Button x:Name="scroll_left" Content="&lt;" Grid.Column="4" Grid.Row="1" Grid.RowSpan="7" Width="20" Height="auto"
+        <Button x:Name="scroll_left" Content="&lt;" Grid.Column="3" Grid.Row="1" Grid.RowSpan="6" Width="20" Height="auto"
                 Click="scroll_left_Click"/>
 
         <ScrollViewer HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Auto"
-                      Grid.Column="5" Grid.Row="1" Grid.RowSpan="7" Height="auto" Width="auto">
-
-            <Canvas x:Name="canvas" Grid.Column="4" Grid.Row="1" Grid.RowSpan="7"  Height="auto" Width="auto"
+                      Grid.Column="4" Grid.Row="1" Grid.RowSpan="6" Height="auto" Width="auto">
+            <Canvas x:Name="canvas" Height="auto" Width="auto"
                     Loaded="Canvas_Loaded"
                     SizeChanged="Canvas_SizeChanged"
                     MouseRightButtonDown="Canvas_MouseRightButtonDown">
             </Canvas>
         </ScrollViewer>
 
-        <Button x:Name="scroll_right" Content=">" Grid.Column="6" Grid.Row="1" Grid.RowSpan="7" Width="20" Height="auto"
+        <Button x:Name="scroll_right" Content=">" Grid.Column="5" Grid.Row="1" Grid.RowSpan="6" Width="20" Height="auto"
                 Click="scroll_right_Click"/>
     </Grid>
     

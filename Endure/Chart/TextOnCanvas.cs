@@ -24,11 +24,13 @@ namespace Endure
     {
         Common common;
 
-        readonly List<TextBlock> verticalText = new List<TextBlock>();
-        readonly List<TextBlock> horizontalText = new List<TextBlock>();
+        readonly List<TextBlock> verticalTextBlock = new List<TextBlock>();
+        readonly List<TextBlock> horizontalTextBlock = new List<TextBlock>();
         
         public List<double> VertivalTextPosition { get; private set; }
-        public Dictionary<string, double> HorizontalTextPositions { get; private set; }
+        public List<string> HorizontalText { get; private set; }
+        public List<double> HorizontalTextPositions { get; private set; }
+
 
         private bool Initialized = false;
 
@@ -71,7 +73,7 @@ namespace Endure
                 Canvas.SetTop(textBlock, VerticalPixelSeperator * (common.VerticalElements - i) + common.FontSize / 2);
 
                 canvas.Children.Add(textBlock);
-                verticalText.Add(textBlock);
+                verticalTextBlock.Add(textBlock);
 
                 VertivalTextPosition.Add(Canvas.GetTop(textBlock));
             }
@@ -83,7 +85,8 @@ namespace Endure
             double height = canvas.ActualHeight - 2 * common.Offset;
 
             HorizontalPixelSeperator = width / common.HorizontalElements;
-            HorizontalTextPositions = new Dictionary<string, double>();
+            HorizontalText = new List<string>();
+            HorizontalTextPositions = new List<double>();
 
             for (int i = 0; i <= common.HorizontalElements; i++)
             {
@@ -103,9 +106,10 @@ namespace Endure
                 Canvas.SetTop(textBlock, height + common.Offset);
 
                 canvas.Children.Add(textBlock);
-                horizontalText.Add(textBlock);
+                horizontalTextBlock.Add(textBlock);
 
-                HorizontalTextPositions[$"{textBlock.Text}.{textBlock.ToolTip}"] = Canvas.GetLeft(textBlock);
+                HorizontalText.Add($"{textBlock.Text}.{textBlock.ToolTip}");
+                HorizontalTextPositions.Add(Canvas.GetLeft(textBlock));
             }
         }
 
@@ -113,14 +117,13 @@ namespace Endure
         {
             if(Initialized)
             {
-                foreach (TextBlock textBlock in verticalText)
+                foreach (TextBlock textBlock in verticalTextBlock)
                 {
                     canvas.Children.Add(textBlock);
                 }
-                foreach (TextBlock textBlock in horizontalText)
+                foreach (TextBlock textBlock in horizontalTextBlock)
                 {
                     canvas.Children.Add(textBlock);
-                    //ellipses.ReaplyEllipsesToCanvas($"{textBlock.Text}.{textBlock.ToolTip}", canvas);
                 }
             }
             else
@@ -142,7 +145,7 @@ namespace Endure
             Canvas.SetLeft(textBlock, left);
 
             canvas.Children.Add(textBlock);
-            horizontalText.Add(textBlock);
+            horizontalTextBlock.Add(textBlock);
         }
 
         TextBlock NewHorizontalText(double left, double top, string text)
@@ -162,25 +165,25 @@ namespace Endure
 
         public string[] OnMoveForward(Canvas canvas)
         {
-            string outOfRange = $"{horizontalText[0].Text}.{horizontalText[0].ToolTip}";
+            string outOfRange = $"{horizontalTextBlock[0].Text}.{horizontalTextBlock[0].ToolTip}";
 
-            HorizontalTextPositions.Clear();
+            HorizontalText.Clear();
 
-            for (int i = 1; i < horizontalText.Count; i++)
+            for (int i = 1; i < horizontalTextBlock.Count; i++)
             {
-                horizontalText[i - 1].ToolTip = horizontalText[i].ToolTip;
-                horizontalText[i - 1].Text = horizontalText[i].Text;
+                horizontalTextBlock[i - 1].ToolTip = horizontalTextBlock[i].ToolTip;
+                horizontalTextBlock[i - 1].Text = horizontalTextBlock[i].Text;
 
-                HorizontalTextPositions[$"{horizontalText[i - 1].Text}.{horizontalText[i - 1].ToolTip}"] = Canvas.GetLeft(horizontalText[i - 1]);
+                HorizontalText.Add($"{horizontalTextBlock[i - 1].Text}.{horizontalTextBlock[i - 1].ToolTip}");
             }
             
             DayOffset++;
-            horizontalText[^1].ToolTip = $"{DateTime.Today.AddDays(DayOffset).Month}.{DateTime.Today.AddDays(DayOffset).Year}";
-            horizontalText[^1].Text = $"{DateTime.Today.AddDays(DayOffset).Day}";
+            horizontalTextBlock[^1].ToolTip = $"{DateTime.Today.AddDays(DayOffset).Month}.{DateTime.Today.AddDays(DayOffset).Year}";
+            horizontalTextBlock[^1].Text = $"{DateTime.Today.AddDays(DayOffset).Day}";
 
-            HorizontalTextPositions[$"{horizontalText[^1].Text}.{horizontalText[^1].ToolTip}"] = Canvas.GetLeft(horizontalText[^1]);
+            HorizontalText.Add($"{horizontalTextBlock[^1].Text}.{horizontalTextBlock[^1].ToolTip}");
 
-            string reaply = $"{horizontalText[^1].Text}.{horizontalText[^1].ToolTip}";
+            string reaply = $"{horizontalTextBlock[^1].Text}.{horizontalTextBlock[^1].ToolTip}";
             string[] returnString = { outOfRange, reaply };
 
             return returnString;
@@ -188,25 +191,29 @@ namespace Endure
 
         public string[] OnMoveBackward(Canvas canvas)
         {
-            string outOfRange = $"{horizontalText[^1].Text}.{horizontalText[^1].ToolTip}";
+            string outOfRange = $"{horizontalTextBlock[^1].Text}.{horizontalTextBlock[^1].ToolTip}";
 
-            HorizontalTextPositions.Clear();
+            HorizontalText.Clear();
 
-            for (int i = horizontalText.Count - 1; i > 0; i--)
+            for (int i = horizontalTextBlock.Count - 1; i > 0; i--)
             {
-                horizontalText[i].ToolTip = horizontalText[i - 1].ToolTip;
-                horizontalText[i].Text = horizontalText[i - 1].Text;
+                horizontalTextBlock[i].ToolTip = horizontalTextBlock[i - 1].ToolTip;
+                horizontalTextBlock[i].Text = horizontalTextBlock[i - 1].Text;
 
-                HorizontalTextPositions[$"{horizontalText[i].Text}.{horizontalText[i].ToolTip}"] = Canvas.GetLeft(horizontalText[i]);
+                //HorizontalText.Insert(0, $"{horizontalTextBlock[i].Text}.{horizontalTextBlock[i].ToolTip}");
+                HorizontalText.Add($"{horizontalTextBlock[i].Text}.{horizontalTextBlock[i].ToolTip}");
             }
 
             DayOffset--;
-            horizontalText[0].ToolTip = $"{DateTime.Today.AddDays(DayOffset - common.HorizontalElements).Month}.{DateTime.Today.AddDays(DayOffset - common.HorizontalElements).Year}";
-            horizontalText[0].Text = $"{DateTime.Today.AddDays(DayOffset - common.HorizontalElements).Day}";
+            horizontalTextBlock[0].ToolTip = $"{DateTime.Today.AddDays(DayOffset - common.HorizontalElements).Month}.{DateTime.Today.AddDays(DayOffset - common.HorizontalElements).Year}";
+            horizontalTextBlock[0].Text = $"{DateTime.Today.AddDays(DayOffset - common.HorizontalElements).Day}";
 
-            HorizontalTextPositions[$"{horizontalText[0].Text}.{horizontalText[0].ToolTip}"] = Canvas.GetLeft(horizontalText[0]);
+            //HorizontalText.Insert(0, $"{horizontalTextBlock[0].Text}.{horizontalTextBlock[0].ToolTip}");
+            HorizontalText.Add($"{horizontalTextBlock[0].Text}.{horizontalTextBlock[0].ToolTip}");
 
-            string reaply = $"{horizontalText[0].Text}.{horizontalText[0].ToolTip}";
+            HorizontalText.Reverse();
+
+            string reaply = $"{horizontalTextBlock[0].Text}.{horizontalTextBlock[0].ToolTip}";
             string[] returnString = { outOfRange, reaply };
 
             return returnString;
@@ -222,22 +229,22 @@ namespace Endure
                 VerticalPixelSeperator = height / common.VerticalElements;
                 HorizontalPixelSeperator = width / common.HorizontalElements;
 
-                foreach (TextBlock text in verticalText)
+                foreach (TextBlock text in verticalTextBlock)
                 {
-                    double verticanPosition = height * (common.VerticalElements - verticalText.IndexOf(text)) / common.VerticalElements;
+                    double verticanPosition = height * (common.VerticalElements - verticalTextBlock.IndexOf(text)) / common.VerticalElements;
 
                     Canvas.SetTop(text, verticanPosition + common.FontSize / 2);
 
-                    VertivalTextPosition[verticalText.IndexOf(text)] = verticanPosition + common.FontSize / 2;
+                    VertivalTextPosition[verticalTextBlock.IndexOf(text)] = verticanPosition + common.FontSize / 2;
                 }
-                foreach (TextBlock text in horizontalText)
+                foreach (TextBlock text in horizontalTextBlock)
                 {
-                    double horisontalPosition = width * horizontalText.IndexOf(text) / common.HorizontalElements + common.VerticalStartPos - common.FontSize;
+                    double horisontalPosition = width * horizontalTextBlock.IndexOf(text) / common.HorizontalElements + common.VerticalStartPos - common.FontSize;
 
                     Canvas.SetTop(text, height + common.Offset);
                     Canvas.SetLeft(text, horisontalPosition);
 
-                    HorizontalTextPositions[$"{text.Text}.{text.ToolTip}"] = horisontalPosition;
+                    HorizontalTextPositions[horizontalTextBlock.IndexOf(text)] = horisontalPosition;
                 }
             }
         }
@@ -246,7 +253,7 @@ namespace Endure
         {
             double height = 0;
 
-            foreach (TextBlock block in verticalText)
+            foreach (TextBlock block in verticalTextBlock)
             {
                 height += block.ActualHeight;
             }
@@ -257,7 +264,7 @@ namespace Endure
         {
             double width = 0;
 
-            foreach (TextBlock block in horizontalText)
+            foreach (TextBlock block in horizontalTextBlock)
             {
                 width += block.ActualWidth + common.FontSize;
             }
@@ -279,9 +286,9 @@ namespace Endure
             double maxScale = common.CurrentMax / common.VerticalElements;
             double minScale = common.CurrentMin / common.VerticalElements;
             double scale = (common.CurrentMax - common.CurrentMin) / common.VerticalElements;
-            foreach (TextBlock block in verticalText)
+            foreach (TextBlock block in verticalTextBlock)
             {
-                block.Text = $"{common.CurrentMin + scale * verticalText.IndexOf(block)}";
+                block.Text = $"{common.CurrentMin + scale * verticalTextBlock.IndexOf(block)}";
                 block.Width = common.VerticalOffset;
             }
         }

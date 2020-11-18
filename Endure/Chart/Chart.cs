@@ -56,38 +56,29 @@ namespace Endure
             {
                 string[] input = inputText.Split(".");
 
-                /*if (IsNewCommenMax(input[0]))
-                {
-                    UpdateChartForeNewInput();
-                }*/
-
-                ellipses.Add(date, input, textOnCanvas.HorizontalTextPositions, canvas);
+                ellipses.Add(date, input, textOnCanvas.HorizontalText, textOnCanvas.HorizontalTextPositions, canvas);
             }
             else if(inputText.Contains(","))
             {
                 string[] input = inputText.Split(",");
-                /*if (IsNewCommenMax(input[0]))
-                {
-                    UpdateChartForeNewInput();
-                }*/
 
-                ellipses.Add(date, input, textOnCanvas.HorizontalTextPositions, canvas);
+                ellipses.Add(date, input, textOnCanvas.HorizontalText, textOnCanvas.HorizontalTextPositions, canvas);
             }
             else
             {
                 string[] input = { inputText, "00" };
-                /*if (IsNewCommenMax(inputText))
-                {
-                    UpdateChartForeNewInput();
-                }*/
 
-                ellipses.Add(date, input, textOnCanvas.HorizontalTextPositions, canvas);
+                ellipses.Add(date, input, textOnCanvas.HorizontalText, textOnCanvas.HorizontalTextPositions, canvas);
             }
 
-            if (common.Update)
+            if (ellipses.Update)
             {
+                if (ellipses.changeMax)
+                    common.CurrentMax = ellipses.CurrentMax;
+                if (ellipses.changeMin)
+                    common.CurrentMin = ellipses.CurrentMin;
+
                 UpdateChartForeNewInput();
-                common.Update = false;
             }
 
             return true;
@@ -96,36 +87,9 @@ namespace Endure
         private void UpdateChartForeNewInput()
         {
             textOnCanvas.UpdateText();
-            Lines.OnSizeChange(textOnCanvas.VertivalTextPosition, textOnCanvas.HorizontalTextPositions.Values.ToList());
-            ellipses.OnSizeChange(textOnCanvas.HorizontalTextPositions);
-        }
-
-        private bool IsNewCommenMax(string number)
-        {
-            if (int.Parse(number) > common.CurrentMax)
-            {
-                switch (number.Length)
-                {
-                    case 1:
-                        common.CurrentMax = 10;
-                        break;
-                    case 2:
-                        common.CurrentMax = (int.Parse($"{number.ElementAt(0)}") + 1) * 10;
-                        break;
-                    case 3:
-                        common.CurrentMax = int.Parse($"{number.ElementAt(0)}") * 100 + (int.Parse($"{number.ElementAt(1)}") + 1) * 10;
-                        break;
-                    case 4:
-                        common.CurrentMax = int.Parse($"{number.ElementAt(0)}") * 1000 + (int.Parse($"{number.ElementAt(1)}") + 1) * 100;
-                        break;
-                    case 5:
-                        common.CurrentMax = int.Parse($"{number.ElementAt(0)}") * 10000 + (int.Parse($"{number.ElementAt(1)}") + 1) * 1000;
-                        break;
-                }
-
-                return true;
-            }
-            return false;
+            textOnCanvas.OnSizeChange();
+            Lines.OnSizeChange(textOnCanvas.VertivalTextPosition, textOnCanvas.HorizontalTextPositions);
+            ellipses.OnSizeChange(textOnCanvas.HorizontalText, textOnCanvas.HorizontalTextPositions);
         }
 
         public void RemoveFromCanvas(Canvas canvas)
@@ -141,7 +105,7 @@ namespace Endure
             }
             Lines.ApplyHeightAndWidthLine(common, canvas);
             textOnCanvas.ReaplyTextOnCanvas(common, canvas);
-            ellipses.ReDraw(textOnCanvas.HorizontalTextPositions, canvas);
+            ellipses.ReDraw(textOnCanvas.HorizontalText, canvas);
 
             OnSizeChange(canvas);
         }
@@ -152,9 +116,9 @@ namespace Endure
             {
                 common.OnSizeChange(canvas);
                 textOnCanvas.OnSizeChange();
-                ellipses.OnSizeChange(textOnCanvas.HorizontalTextPositions);
+                ellipses.OnSizeChange(textOnCanvas.HorizontalText, textOnCanvas.HorizontalTextPositions);
 
-                Lines.OnSizeChange(textOnCanvas.VertivalTextPosition, textOnCanvas.HorizontalTextPositions.Values.ToList());
+                Lines.OnSizeChange(textOnCanvas.VertivalTextPosition, textOnCanvas.HorizontalTextPositions);
             }
         }
 
@@ -170,36 +134,44 @@ namespace Endure
 
         public void OnMoveForward(Canvas canvas)
         {
-            //textOnCanvas.OnMoveForward(ellipses, canvas);
-            ellipses.OnMove(textOnCanvas.OnMoveForward(canvas), true, textOnCanvas.HorizontalTextPositions, canvas);
-            if (common.Update)
+            ellipses.OnMove(textOnCanvas.OnMoveForward(canvas), true, textOnCanvas.HorizontalText, textOnCanvas.HorizontalTextPositions, canvas);
+            if (ellipses.Update)
             {
+                if (ellipses.changeMax)
+                    common.CurrentMax = ellipses.CurrentMax;
+                if (ellipses.changeMin)
+                    common.CurrentMin = ellipses.CurrentMin;
+
                 UpdateChartForeNewInput();
-                common.Update = false;
+                //common.Update = false;
             }
         }
 
         public void OnMoveBackward(Canvas canvas)
         {
-            //textOnCanvas.OnMoveBackward(ellipses, canvas);
-            ellipses.OnMove(textOnCanvas.OnMoveBackward(canvas), false, textOnCanvas.HorizontalTextPositions, canvas);
-            if (common.Update)
+            ellipses.OnMove(textOnCanvas.OnMoveBackward(canvas), false, textOnCanvas.HorizontalText, textOnCanvas.HorizontalTextPositions, canvas);
+            if (ellipses.Update)
             {
+                if (ellipses.changeMax)
+                    common.CurrentMax = ellipses.CurrentMax;
+                if (ellipses.changeMin)
+                    common.CurrentMin = ellipses.CurrentMin;
+
                 UpdateChartForeNewInput();
-                common.Update = false;
+                //common.Update = false;
             }
         }
 
         public void AddLines(Canvas canvas)
         {
             canvas.Children.Clear();
-            Lines.AddLines(canvas, textOnCanvas.VertivalTextPosition, textOnCanvas.HorizontalTextPositions.Values.ToList());
+            Lines.AddLines(canvas, textOnCanvas.VertivalTextPosition, textOnCanvas.HorizontalTextPositions);
             
             DrawChartLines = Lines.DrawLines = true;
             Lines.ApplyHeightAndWidthLine(common, canvas);
 
             textOnCanvas.ReaplyTextOnCanvas(common, canvas);
-            ellipses.ReDraw(textOnCanvas.HorizontalTextPositions, canvas);
+            ellipses.ReDraw(textOnCanvas.HorizontalText, canvas);
         }
 
         public void RemoveLines(Canvas canvas)

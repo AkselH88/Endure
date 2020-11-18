@@ -15,6 +15,12 @@ namespace Endure
         readonly LinesBetweenPoints lines = new LinesBetweenPoints();
         private bool Initialized = false;
 
+        public int CurrentMax { get; private set; }
+        public int CurrentMin { get; private set; }
+        public bool Update { get; private set; }
+        public bool changeMax { get; private set; }
+        public bool changeMin { get; private set; }
+
         readonly int Diameter = 5;
         readonly double Radius = 2.5;
 
@@ -24,6 +30,9 @@ namespace Endure
         public void Initialize(Common common)
         {
             this.common = common;
+            CurrentMax = common.CurrentMax;
+            CurrentMin = common.CurrentMin;
+            RevertSizeUpdateBoolians();
         }
 
         private Ellipse NewEllipse(string toToolTip)
@@ -37,12 +46,12 @@ namespace Endure
             };
         }
 
-        public void Add(string[] date, string[] text, Dictionary<string, double> horizontalPositions, Canvas canvas)
+        public void Add(string[] date, string[] text, List<string> horizontalText, List<double> horizontalPositions, Canvas canvas)
         {
             string FullDate = $"{int.Parse(date[0])}.{int.Parse(date[1])}.{date[2]}";
             string ToolTip = $"{date[0]}, {text[0]}.{text[1]}";
 
-            if (!horizontalPositions.ContainsKey(FullDate))
+            if (!horizontalText.Contains(FullDate))
             {
                 if (ellipses.ContainsKey(FullDate))
                 {
@@ -67,12 +76,12 @@ namespace Endure
                 if (ellipses.ContainsKey(FullDate))
                 {
                     ellipses[FullDate].ToolTip = ToolTip;
-                    SetEllipsePosition(ellipses[FullDate], FullDate, horizontalPositions[FullDate], canvas);
+                    SetEllipsePosition(ellipses[FullDate], FullDate, horizontalPositions[horizontalText.IndexOf(FullDate)], canvas);
                 }
                 else
                 {
                     ellipses.Add(FullDate, NewEllipse(ToolTip));
-                    SetEllipsePosition(ellipses[FullDate], FullDate, horizontalPositions[FullDate], canvas);
+                    SetEllipsePosition(ellipses[FullDate], FullDate, horizontalPositions[horizontalText.IndexOf(FullDate)], canvas);
 
                     string next = lines.GetNext(FullDate);
                     if(canvas.Children.Contains(ellipses[next]))
@@ -114,19 +123,19 @@ namespace Endure
         }
 
 
-        public void ReDraw(Dictionary<string, double> horizontalPositions, Canvas canvas)
+        public void ReDraw(List<string> horizontalText, Canvas canvas)
         {
             if(lines.DrawTail(Left, out Line tail))
             {
                 canvas.Children.Add(tail);
             }
 
-            foreach (var position in horizontalPositions)
+            foreach (var position in horizontalText)
             {
-                if(ellipses.ContainsKey(position.Key))
+                if(ellipses.ContainsKey(position))
                 {
-                    canvas.Children.Add(lines.GetLine(position.Key));
-                    canvas.Children.Add(ellipses[position.Key]);
+                    canvas.Children.Add(lines.GetLine(position));
+                    canvas.Children.Add(ellipses[position]);
                 }
             }
         }
@@ -150,41 +159,38 @@ namespace Endure
             }
         }
 
-        public void OnMove(string[] removeAndAdd, bool moveForward, Dictionary<string, double> horizontalPositions, Canvas canvas)
+        public void OnMove(string[] removeAndAdd, bool moveForward, List<string> horizontalText, List<double> horizontalPositions, Canvas canvas)
         {
             EllipseOutOfRange(removeAndAdd[0], moveForward, canvas);
             ReaplyEllipseToCanvas(removeAndAdd[1], moveForward, canvas);
 
-            foreach (var position in horizontalPositions)
+            foreach (var position in horizontalText)
             {
-                if(ellipses.ContainsKey(position.Key))
+                if(ellipses.ContainsKey(position))
                 {
-                    SetEllipsePosition(ellipses[position.Key], position.Key, horizontalPositions[position.Key]);
+                    SetEllipsePosition(ellipses[position], position, horizontalPositions[horizontalText.IndexOf(position)]);
                 }
             }
 
-            if(moveForward)
-                UpdateLeftAndRight(horizontalPositions.Keys.First(), horizontalPositions.Keys.Last());
-            else
-                UpdateLeftAndRight(horizontalPositions.Keys.Last(), horizontalPositions.Keys.First());
+            UpdateLeftAndRight(horizontalText.First(), horizontalText.Last());
 
             UpdateFrontAndBack();
             NeedSizeUpdate();
         }
 
-        public void OnSizeChange(Dictionary<string, double> horizontalPositions)
+        public void OnSizeChange(List<string> horizontalText, List<double> horizontalPositions)
         {
-            foreach (var position in horizontalPositions)
+            foreach (var position in horizontalText)
             {
-                if (ellipses.ContainsKey(position.Key))
+                if (ellipses.ContainsKey(position))
                 {
-                    SetEllipsePosition(ellipses[position.Key], position.Key, horizontalPositions[position.Key]);
+                    SetEllipsePosition(ellipses[position], position, horizontalPositions[horizontalText.IndexOf(position)]);
                 }
             }
             if(!Initialized)
             {
-                Left = new KeyDate(horizontalPositions.Keys.First());
-                Right = new KeyDate(horizontalPositions.Keys.Last());
+                Left = new KeyDate(horizontalText.First());
+                Right = new KeyDate(horizontalText.Last());
 
                 Initialized = true;
             }
@@ -217,14 +223,18 @@ namespace Endure
             }
         }
 
+        public void RevertSizeUpdateBoolians()
+        {
+            Update = false;
+            changeMax = false;
+            changeMin = false;
+        }
         private void NeedSizeUpdate()
         {
             KeyDate i = lines.TailKey;
-
+            RevertSizeUpdateBoolians();
             int max = 0;
-            int min = common.CurrentMax;
-            bool changeMax = false;
-            bool changeMin = false;
+            int min = CurrentMax;
             bool change = false;
 
             if (lines.TailKey == lines.HeadKey && lines.HeadKey <= Left && lines.HeadKey == lines.GetNext(lines.HeadKey) ||
@@ -261,29 +271,29 @@ namespace Endure
             if (change)
             {
                 int tempMax = RetriveNewNum(max, 1);
-                if (tempMax != common.CurrentMax)
+                if (tempMax != CurrentMax)
                 {
                     if (tempMax < 10)
-                        common.CurrentMax = 10;
+                        CurrentMax = 10;
                     else
-                        common.CurrentMax = tempMax;
+                        CurrentMax = tempMax;
 
                     changeMax = true;
                 }
 
                 int tempMin = RetriveNewNum(min, -1);
-                if (tempMin != common.CurrentMin)
+                if (tempMin != CurrentMin)
                 {
                     if (tempMin < 0)
-                        common.CurrentMin = 0;
+                        CurrentMin = 0;
                     else
-                        common.CurrentMin = tempMin;
+                        CurrentMin = tempMin;
 
                     changeMin = true;
                 }
             }
 
-            common.Update = changeMax || changeMin;
+            Update = changeMax || changeMin;
         }
 
         private int RetriveNewNum(int current, int direction)

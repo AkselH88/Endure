@@ -47,11 +47,20 @@ namespace Endure.DataAccess
             }
         }
 
-        public static void AlterTable(string key, string colomn)
+        /// <summary>
+        /// key represent table
+        /// string "action" options ADD, DROP COLUMN, ALTER COLUMN
+        /// the action ADD and ALTER COLUMN require a datatype.
+        /// datatypes are {}
+        /// </summary>
+        public static void AlterTable(string key, string action, string colomn, string datatype = "")
         {
             using (IDbConnection cnn = new SQLiteConnection(ConnectionString))
             {
-                cnn.Execute($"ALTER TABLE '{key}' ADD {colomn} text;");
+                if(datatype == "")
+                    cnn.Execute($"ALTER TABLE '{key}' {action} {colomn};");
+                else
+                    cnn.Execute($"ALTER TABLE '{key}' {action} {colomn} {datatype};");
             }
         }
 

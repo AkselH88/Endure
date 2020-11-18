@@ -33,9 +33,11 @@ namespace Endure
     public partial class MainWindow : Window
     {
         public Dictionary<string, Chart> charts = new Dictionary<string, Chart>();
+        //public IObservable Observable;
 
         string selectedDate = string.Empty;
         string currentChart;// = string.Empty;
+        bool InsertRightPanel = true;
         
         public MainWindow()
         {
@@ -46,6 +48,36 @@ namespace Endure
             ChartSelect.ItemsSource = charts.Keys;
             ChartSelect.SelectedItem = charts.First().Key;
             ChartSelect.SelectionChanged += ChartSelect_SelectionChanged;
+
+            RightPanel.Children.Add(CreateTextBlock("Weight"));
+            RightPanel.Children.Add(CreateTextBox("Weight"));
+            LeftPanel.Children.Add(CreateTextBlock("Reps"));
+            LeftPanel.Children.Add(CreateTextBox("Reps"));
+        }
+
+        private TextBox CreateTextBox(string name)
+        {
+            TextBox box = new TextBox
+            {
+                Name = name,
+                Width = 70,
+                Height = 25,
+            };
+
+            box.PreviewTextInput += TextBoxNumberValidation;
+
+            return box;
+        }
+
+        private TextBlock CreateTextBlock(string name)
+        {
+            return new TextBlock
+            {
+                Text = name,
+                FontSize = 14,
+                FontWeight = FontWeights.DemiBold,
+                HorizontalAlignment = HorizontalAlignment.Center
+            };
         }
 
         public void InitializeCharts()
@@ -132,16 +164,25 @@ namespace Endure
         {
             string[] date = chosen_date.Text.Split(".");
 
-            if(!charts[currentChart].HandelNewInput(date, inputWeight.Text, canvas))
+            foreach (object child in RightPanel.Children)
             {
-                ErrorWindow errorWindow = new ErrorWindow("Input Error", "You need to insert a number. Ex: <4>, <12.3>, <5,1> etz...");
-                errorWindow.Owner = this;
-                errorWindow.ShowDialog();
-            }
-            else
-            {
-                string[] toDB = { chosen_date.Text, inputWeight.Text };
-                SQLiteDataAccess.SaveToTable(currentChart, toDB);
+                if (child is TextBox)
+                {
+                    TextBox textBox = child as TextBox;
+                    if (!charts[currentChart].HandelNewInput(date, textBox.Text, canvas))
+                    {
+                        ErrorWindow errorWindow = new ErrorWindow("Input Error", "You need to insert a number. Ex: <4>, <12.3>, <5,1> etz...");
+                        errorWindow.Owner = this;
+                        errorWindow.ShowDialog();
+                    }
+                    else
+                    {
+                        string[] toDB = { chosen_date.Text, textBox.Text };
+                        SQLiteDataAccess.SaveToTable(currentChart, toDB);
+                    }
+
+                    textBox.Text = "";
+                }
             }
         }
 
