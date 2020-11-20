@@ -193,7 +193,7 @@ namespace Endure
         {
             string[] date = chosen_date.Text.Split(".");
 
-            if (!charts[currentChart].HandelNewInput(date, out List<string> textFialds, canvas))
+            if (!charts[currentChart].HandelNewInput(date, out List<string> textFialds, out bool DateExists, canvas))
             {
                 ErrorWindow errorWindow = new ErrorWindow("Input Error", "You need to insert a number. Ex: <4>, <12.3>, <5,1> etz...");
                 errorWindow.Owner = this;
@@ -201,8 +201,27 @@ namespace Endure
             }
             else
             {
-                textFialds.Insert(0, chosen_date.Text);
-                SQLiteDataAccess.SaveToTable(currentChart, textFialds);
+                if (!DateExists)
+                {
+                    textFialds.Insert(0, chosen_date.Text);
+                    SQLiteDataAccess.SaveToTable(currentChart, textFialds);
+                }
+                else
+                {
+                    List<string> colomn = new List<string>();
+                    List<string> values = new List<string>();
+                    colomn.Add("Date");
+                    values.Add(chosen_date.Text);
+                    for (int i = 0; i < textFialds.Count; i++)
+                    {
+                        if(textFialds[i] != string.Empty)
+                        {
+                            colomn.Add(charts[currentChart].panelInput.Elements[i].Item1.Text);
+                            values.Add(textFialds[i]);
+                        }
+                    }
+                    SQLiteDataAccess.SaveToTableAtSpesifiedRow(currentChart, colomn, values);
+                }
             }
         }
 
@@ -257,7 +276,56 @@ namespace Endure
 
         private void Canvas_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
         {
-            Debug.WriteLine(e.GetPosition(sender as Canvas));
+            Debug.WriteLine(e.GetPosition(sender as Canvas).X);
+
+            if (charts[currentChart].FindDate(e.GetPosition(sender as Canvas).X, out string date))
+            {
+                List<(string, string)> output = new List<(string, string)>();
+                LeftClickOnCanvasWindow clickOnCanvas = new LeftClickOnCanvasWindow("Add to Chart", date, charts[currentChart].panelInput.ElementNames, output);
+                clickOnCanvas.Owner = this;
+                clickOnCanvas.ShowDialog();
+
+                if (output.Count > 0)
+                {
+                    if (!charts[currentChart].HandelNewInput(date.Split("."), output, out bool DateExists, canvas))
+                    {
+                        ErrorWindow errorWindow = new ErrorWindow("Input Error", "You need to insert a number. Ex: <4>, <12.3>, <5,1> etz...");
+                        errorWindow.Owner = this;
+                        errorWindow.ShowDialog();
+                    }
+                    else
+                    {
+                        if (!DateExists)
+                        {
+
+                            List<string> values = new List<string>();
+                            values.Add(date);
+                            foreach (var value in output)
+                            {
+                                values.Add(value.Item2);
+                            }
+                            SQLiteDataAccess.SaveToTable(currentChart, values);
+                        }
+                        else
+                        {
+                            List<string> colomn = new List<string>();
+                            List<string> values = new List<string>();
+                            colomn.Add("Date");
+                            values.Add(date);
+                            for (int i = 0; i < output.Count; i++)
+                            {
+                                if (output[i].Item2 != string.Empty)
+                                {
+                                    colomn.Add(output[i].Item1);
+                                    values.Add(output[i].Item2);
+                                }
+                            }
+                            SQLiteDataAccess.SaveToTableAtSpesifiedRow(currentChart, colomn, values);
+                        }
+                    }
+                }
+                Debug.WriteLine(date);
+            }
         }
 
         private void Canvas_MouseRightButtonDown(object sender, MouseButtonEventArgs e)

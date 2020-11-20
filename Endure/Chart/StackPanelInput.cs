@@ -26,19 +26,23 @@ namespace Endure
     public class StackPanelInput
     {
         public List<(TextBlock, TextBox)> Elements { get; private set; }
+        public List<string> ElementNames { get; private set; }
         public StackPanelInput()
         {
             Elements = new List<(TextBlock, TextBox)>();
+            ElementNames = new List<string>();
         }
 
         public void Add(string name)
         {
             Elements.Add((CreateTextBlock(name), CreateTextBox(name)));
+            ElementNames.Add(name);
         }
 
         public void Remove(TextBlock block, TextBox box)
         {
             Elements.Remove((block, box));
+            ElementNames.Remove(box.Name);
         }
 
         private TextBox CreateTextBox(string name)
@@ -47,7 +51,8 @@ namespace Endure
             {
                 Name = name,
                 Width = 70,
-                Height = 25,
+                Height = 30,
+                VerticalAlignment = VerticalAlignment.Center
             };
 
             box.PreviewTextInput += TextBoxNumberValidation;

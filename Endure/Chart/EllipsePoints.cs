@@ -5,6 +5,8 @@ using System.Windows.Controls;
 using System.Windows.Media;
 using System.Windows.Shapes;
 
+using System.Diagnostics;
+
 
 namespace Endure
 {
@@ -45,10 +47,18 @@ namespace Endure
             };
         }
 
+        public bool ContainsDate(string[] date)
+        {
+            string FullDate = $"{int.Parse(date[0])}.{int.Parse(date[1])}.{date[2]}";
+            return ellipses.ContainsKey(FullDate);
+        }
+
         public void Add(string[] date, string[] text, List<string> horizontalText, List<double> horizontalPositions, Canvas canvas)
         {
             string FullDate = $"{int.Parse(date[0])}.{int.Parse(date[1])}.{date[2]}";
             string ToolTip = $"{date[0]}, {text[0]}.{text[1]}";
+
+            Debug.WriteLine(ToolTip);
 
             if (!Initialized)
             {
@@ -246,44 +256,47 @@ namespace Endure
             KeyDate i = lines.TailKey;
             RevertSizeUpdateBoolians();
             int max = 0;
-            int min = CurrentMax;
+            int min = int.MaxValue;
             bool change = false;
 
-            if (lines.TailKey == lines.HeadKey && lines.HeadKey <= Left && lines.HeadKey == lines.GetNext(lines.HeadKey) ||
-                lines.TailKey == lines.HeadKey && lines.HeadKey == lines.GetNext(lines.HeadKey) ||
-                lines.TailKey == lines.HeadKey && lines.TailKey >= Right)
+            if (lines.GetNewSize)
             {
-                max = min = int.Parse(ellipses[i.ToString()].ToolTip.ToString().Split(" ")[1].Split(".")[0]);
-                change = true;
-            }
-            else if(lines.TailKey != lines.HeadKey || lines.HeadKey != lines.GetNext(lines.HeadKey))
-            {
-                KeyDate temp = i;
-                while (i <= lines.GetNext(lines.HeadKey))
+                if (lines.TailKey != lines.HeadKey || lines.HeadKey != lines.GetNext(lines.HeadKey))
                 {
-                    int ellipseValue = int.Parse(ellipses[i.ToString()].ToolTip.ToString().Split(" ")[1].Split(".")[0]);
-                    if (max < ellipseValue)
+                    KeyDate temp = i;
+                    while (i <= lines.GetNext(lines.HeadKey))
                     {
-                        max = ellipseValue;
-                    }
-                    if (min > ellipseValue)
-                    {
-                        min = ellipseValue;
+                        int ellipseValue = int.Parse(ellipses[i.ToString()].ToolTip.ToString().Split(" ")[1].Split(".")[0]);
+                        if (max < ellipseValue)
+                        {
+                            max = ellipseValue;
+                        }
+                        if (min > ellipseValue)
+                        {
+                            min = ellipseValue;
+                        }
+
+                        i = lines.GetNext(i);
+                        if (temp == i)
+                            break;
+                        temp = i;
                     }
 
-                    i = lines.GetNext(i);
-                    if (temp == i)
-                        break;
-                    temp = i;
+                    change = true;
                 }
-
-                change = true;
+                else if (lines.TailKey == lines.HeadKey && lines.HeadKey <= Left && lines.HeadKey == lines.GetNext(lines.HeadKey) ||
+                    lines.TailKey == lines.HeadKey && lines.HeadKey == lines.GetNext(lines.HeadKey) ||
+                    lines.TailKey == lines.HeadKey && lines.TailKey >= Right)
+                {
+                    max = min = int.Parse(ellipses[i.ToString()].ToolTip.ToString().Split(" ")[1].Split(".")[0]);
+                    change = true;
+                }
             }
 
             if (change)
             {
                 int tempMax = RetriveNewNum(max, 1);
-                if (tempMax != CurrentMax)
+                if (tempMax != CurrentMax && max > CurrentMin)
                 {
                     if (tempMax < 10)
                         CurrentMax = 10;
@@ -294,7 +307,7 @@ namespace Endure
                 }
 
                 int tempMin = RetriveNewNum(min, -1);
-                if (tempMin != CurrentMin)
+                if (tempMin != CurrentMin && min < CurrentMax)
                 {
                     if (tempMin < 0)
                         CurrentMin = 0;
@@ -303,6 +316,7 @@ namespace Endure
 
                     changeMin = true;
                 }
+                lines.ResetNewSize();
             }
 
             Update = changeMax || changeMin;

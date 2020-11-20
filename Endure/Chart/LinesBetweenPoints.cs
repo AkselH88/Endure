@@ -14,6 +14,7 @@ namespace Endure
         // Head and Tail Key is only relevent for whats on desplay.
         public KeyDate HeadKey { get; private set; }
         public KeyDate TailKey { get; private set; }
+        public bool GetNewSize { get; private set; }
 
         bool Initialized = false;
 
@@ -58,11 +59,13 @@ namespace Endure
                             canvas.Children.Remove(lines[TailKey]);
                             TailKey = Key;
                             canvas.Children.Add(lines[TailKey]);
+                            GetNewSize = true;
                         }
                         else if (left < TailKey)
                         {
                             TailKey = Key;
                             canvas.Children.Add(lines[TailKey]);
+                            GetNewSize = true;
                         }
                         if (Key > HeadKey)
                         {
@@ -80,16 +83,18 @@ namespace Endure
                             HeadKey = Key;
                         }
                     }
-
                 }
                 else
                 {
                     lines.Initialize(Key, line);
                     TailKey = HeadKey = Key;
                     Initialized = true;
+                    GetNewSize = true;
 
-                    if(Key < left)
+                    if (Key < left)
+                    {
                         canvas.Children.Add(lines[Key]);
+                    }
                 }
             }
 
@@ -205,6 +210,7 @@ namespace Endure
                     canvas.Children.Add(lines[Key]);
                 }
             }
+            GetNewSize = true;
         }
 
         public bool OnSizeChange(KeyDate key, double x, double y)
@@ -237,6 +243,7 @@ namespace Endure
             if(TailKey != null && TailKey < left)
             {
                 tail = lines[TailKey];
+                GetNewSize = true;
                 return true;
             }
             tail = null;
@@ -380,6 +387,7 @@ namespace Endure
                 if (!canvas.Children.Contains(lines[Key]))
                 {
                     canvas.Children.Add(lines[Key]);
+                    GetNewSize = true;
                 }
             }
             else
@@ -388,6 +396,7 @@ namespace Endure
                 {
                     TailKey = lines.GetPrevius(Key);
                     canvas.Children.Add(lines[TailKey]);
+                    GetNewSize = true;
                 }
                 else
                 {
@@ -406,6 +415,7 @@ namespace Endure
                 if (!lines.IsTail(Key))
                 {
                     canvas.Children.Remove(lines[lines.GetPrevius(Key)]);
+                    GetNewSize = true;
                 }
             }
             else
@@ -420,7 +430,13 @@ namespace Endure
                 }
 
                 canvas.Children.Remove(lines[Key]);
+                GetNewSize = true;
             }
+        }
+
+        public void ResetNewSize()
+        {
+            GetNewSize = false;
         }
     }
 }

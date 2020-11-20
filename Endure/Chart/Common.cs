@@ -9,15 +9,7 @@ namespace Endure
     {
         public Common()
         {
-            this.Offset = Defoult.Offset;
-            this.VerticalOffset = Defoult.Offset;
-            this.FontSize = Defoult.FontSize;
-            this.Padding = Defoult.Padding;
-            this.VerticalElements = Defoult.VerticalElements;
-            this.HorizontalElements = Defoult.HorizontalElements;
-
-            this.CurrentMax = Defoult.CurrentMax;
-            this.CurrentMin = Defoult.CurrentMin;
+            RevertToDefoult();
         }
 
         public int Offset { get; set; }
@@ -56,7 +48,7 @@ namespace Endure
     {
         public static readonly int Offset = 20;
         public static readonly int VerticalElements = 10;
-        public static readonly int HorizontalElements = 10;
+        public static readonly int HorizontalElements = 30;
         public static readonly int FontSize = 14;
         public static readonly int Padding = 4;
 

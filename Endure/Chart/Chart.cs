@@ -17,8 +17,13 @@ using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
 
+using System.Diagnostics;
+
+
+
 namespace Endure
 {
+    
     public class Chart
     {
         readonly Common common = new Common();
@@ -71,9 +76,9 @@ namespace Endure
             }
         }
 
-        public bool HandelInputFromDB(/*List<string> doubleList*/List<List<string>> rows, Canvas canvas)
+        public bool HandelInputFromDB(List<List<string>> rows, Canvas canvas)
         {
-            EvaluateUpdate evaluateUpdate = new EvaluateUpdate(common.CurrentMax);
+            EvaluateUpdate evaluateUpdate = new EvaluateUpdate();
 
             foreach (List<string> row in rows)
             {
@@ -102,10 +107,12 @@ namespace Endure
 
                             ellipses[set.Item1.Text].Add(date, input, textOnCanvas.HorizontalText, textOnCanvas.HorizontalTextPositions, canvas);
                         }
-
                         evaluateUpdate.evaluate(ellipses[set.Item1.Text].Update, ellipses[set.Item1.Text].changeMax, ellipses[set.Item1.Text].changeMin,
                                                 ellipses[set.Item1.Text].CurrentMax, ellipses[set.Item1.Text].CurrentMin);
+
                     }
+
+
 
                     i++;
                 }
@@ -122,34 +129,22 @@ namespace Endure
         class EvaluateUpdate
         {
             int max = 0;
-            int min = 0;
+            int min = int.MaxValue;
             bool changeMax = false;
             bool changeMin = false;
-            public EvaluateUpdate(int setMinToMax)
-            {
-                min = setMinToMax;
-            }
 
             public void evaluate(bool update, bool chMax, bool chMin, int cuMax, int cuMin)
             {
-                if (update)
+                changeMax = changeMax || chMax;
+                changeMin = changeMin || chMin;
+                if (max < cuMax)
                 {
-                    if (chMax)
-                    {
-                        if (max < cuMax)
-                        {
-                            max = cuMax;
-                            changeMax = true;
-                        }
-                    }
-                    if (chMin)
-                    {
-                        if (min > cuMin)
-                        {
-                            min = cuMin;
-                            changeMin = true;
-                        }
-                    }
+                    max = cuMax;
+                }
+
+                if (min > cuMin)
+                {
+                    min = cuMin;
                 }
             }
 
@@ -168,39 +163,41 @@ namespace Endure
             }
         }
 
-        public bool HandelNewInput(string[] date, out List<string> inputs, Canvas canvas)
+        public bool HandelNewInput(string[] date, out List<string> inputs, out bool DateExists, Canvas canvas)
         {
             inputs = new List<string>();
-
-            EvaluateUpdate evaluateUpdate = new EvaluateUpdate(common.CurrentMax);
+            EvaluateUpdate evaluateUpdate = new EvaluateUpdate();
+            bool OneOreMore = false;
+            DateExists = false;
 
             foreach (var set in panelInput.Elements)
             {
+                DateExists = DateExists || ellipses[set.Item1.Text].ContainsDate(date);
                 if (set.Item2.Text != string.Empty)
                 {
                     if (set.Item2.Text.Contains("."))
                     {
                         string[] input = set.Item2.Text.Split(".");
-
                         ellipses[set.Item1.Text].Add(date, input, textOnCanvas.HorizontalText, textOnCanvas.HorizontalTextPositions, canvas);
                     }
                     else if (set.Item2.Text.Contains(","))
                     {
                         string[] input = set.Item2.Text.Split(",");
-
                         ellipses[set.Item1.Text].Add(date, input, textOnCanvas.HorizontalText, textOnCanvas.HorizontalTextPositions, canvas);
                     }
                     else
                     {
                         string[] input = { set.Item2.Text, "00" };
-
                         ellipses[set.Item1.Text].Add(date, input, textOnCanvas.HorizontalText, textOnCanvas.HorizontalTextPositions, canvas);
-                    }
 
-                    evaluateUpdate.evaluate(ellipses[set.Item1.Text].Update, ellipses[set.Item1.Text].changeMax, ellipses[set.Item1.Text].changeMin,
-                                            ellipses[set.Item1.Text].CurrentMax, ellipses[set.Item1.Text].CurrentMin);
+                        string toDebug = $"{set.Item1.Text} : {set.Item2.Text}";
+                        Debug.WriteLine(toDebug);
+                    }
+                    OneOreMore = true;
                 }
-                
+
+                evaluateUpdate.evaluate(ellipses[set.Item1.Text].Update, ellipses[set.Item1.Text].changeMax, ellipses[set.Item1.Text].changeMin,
+                                            ellipses[set.Item1.Text].CurrentMax, ellipses[set.Item1.Text].CurrentMin);
 
                 inputs.Add(set.Item2.Text);
                 set.Item2.Text = "";
@@ -211,7 +208,51 @@ namespace Endure
                 UpdateChartForeNewInput();
             }
 
-            return true;
+            return OneOreMore;
+        }
+
+        public bool HandelNewInput(string[] date, List<(string, string)> inputs, out bool DateExists, Canvas canvas)
+        {
+            EvaluateUpdate evaluateUpdate = new EvaluateUpdate();
+            bool OneOreMore = false;
+            DateExists = false;
+
+            foreach (var set in inputs)
+            {
+                DateExists = DateExists || ellipses[set.Item1].ContainsDate(date);
+                if (set.Item2 != string.Empty)
+                {
+                    if (set.Item2.Contains("."))
+                    {
+                        string[] input = set.Item2.Split(".");
+                        ellipses[set.Item1].Add(date, input, textOnCanvas.HorizontalText, textOnCanvas.HorizontalTextPositions, canvas);
+                    }
+                    else if (set.Item2.Contains(","))
+                    {
+                        string[] input = set.Item2.Split(",");
+                        ellipses[set.Item1].Add(date, input, textOnCanvas.HorizontalText, textOnCanvas.HorizontalTextPositions, canvas);
+                    }
+                    else
+                    {
+                        string[] input = { set.Item2, "00" };
+                        ellipses[set.Item1].Add(date, input, textOnCanvas.HorizontalText, textOnCanvas.HorizontalTextPositions, canvas);
+
+                        string toDebug = $"{set.Item1} : {set.Item2}";
+                        Debug.WriteLine(toDebug);
+                    }
+                    OneOreMore = true;
+                }
+
+                evaluateUpdate.evaluate(ellipses[set.Item1].Update, ellipses[set.Item1].changeMax, ellipses[set.Item1].changeMin,
+                                            ellipses[set.Item1].CurrentMax, ellipses[set.Item1].CurrentMin);
+            }
+
+            if (evaluateUpdate.update(common))
+            {
+                UpdateChartForeNewInput();
+            }
+
+            return OneOreMore;
         }
 
         private void UpdateChartForeNewInput()
@@ -270,9 +311,22 @@ namespace Endure
             get { return textOnCanvas.MinWidth(); }
         }
 
+        public bool FindDate(double position, out string date)
+        {
+            if(position > common.VerticalOffset)
+            {
+                int i = (int)(position / textOnCanvas.HorizontalPixelSeperator);
+                date = textOnCanvas.HorizontalText[i];
+                return true;
+            }
+
+            date = string.Empty;
+            return false;
+        }
+
         public void OnMoveForward(Canvas canvas)
         {
-            EvaluateUpdate evaluateUpdate = new EvaluateUpdate(common.CurrentMax);
+            EvaluateUpdate evaluateUpdate = new EvaluateUpdate();
             string[] moveText = textOnCanvas.OnMoveForward(canvas);
 
             foreach (var set in panelInput.Elements)
@@ -290,7 +344,7 @@ namespace Endure
 
         public void OnMoveBackward(Canvas canvas)
         {
-            EvaluateUpdate evaluateUpdate = new EvaluateUpdate(common.CurrentMax);
+            EvaluateUpdate evaluateUpdate = new EvaluateUpdate();
             string[] moveText = textOnCanvas.OnMoveBackward(canvas);
 
             foreach (var set in panelInput.Elements)
