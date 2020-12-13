@@ -14,9 +14,15 @@ namespace Endure
     {
         Common common;
         readonly Dictionary<string, Ellipse> ellipses = new Dictionary<string, Ellipse>();
-        readonly LinesBetweenPoints lines = new LinesBetweenPoints();
+        readonly LinesBetweenPoints lines;// = new LinesBetweenPoints();
+        private (Brush, Brush) brushes;
         private bool Initialized = false;
-
+        public EllipsePoints() { brushes = (Brushes.Coral, Brushes.CadetBlue); }
+        public EllipsePoints(Brush ellipseBrush, Brush lineBrush)
+        {
+            brushes = (ellipseBrush, lineBrush);
+            lines = new LinesBetweenPoints(lineBrush);
+        }
         public int CurrentMax { get; private set; }
         public int CurrentMin { get; private set; }
         public bool Update { get; private set; }
@@ -42,7 +48,7 @@ namespace Endure
             {
                 Width = Diameter,
                 Height = Diameter,
-                Fill = Brushes.Coral,
+                Fill = brushes.Item1,
                 ToolTip = toToolTip
             };
         }

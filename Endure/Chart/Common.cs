@@ -48,7 +48,7 @@ namespace Endure
     {
         public static readonly int Offset = 20;
         public static readonly int VerticalElements = 10;
-        public static readonly int HorizontalElements = 30;
+        public static readonly int HorizontalElements = 10;
         public static readonly int FontSize = 14;
         public static readonly int Padding = 4;
 

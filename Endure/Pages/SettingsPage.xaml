@@ -1,0 +1,46 @@
+﻿<Page x:Class="Endure.Pages.SettingsPage"
+      xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+      xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+      xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+      xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+      xmlns:local="clr-namespace:Endure.Pages"
+      mc:Ignorable="d" FontSize="16"
+      d:DesignHeight="450" d:DesignWidth="400"
+      Title="SettingsPage">
+
+    <Border x:Name="SettingsBorder" BorderThickness="3" Background="#66aaaaaa" BorderBrush="#66444444">
+        <ScrollViewer HorizontalScrollBarVisibility="Disabled" VerticalScrollBarVisibility="Auto"
+                          MaxHeight="{Binding Path=ActualHeight, RelativeSource={RelativeSource Mode=FindAncestor, AncestorType=Page}}">
+            <TreeView Background="Transparent" BorderBrush="Transparent" Margin="5">
+                <TreeViewItem Header="Charts">
+                    <TreeViewItem x:Name="AddChart" Header="Add Chart">
+                        <Border BorderThickness="2" BorderBrush="Black" CornerRadius="3">
+                            <StackPanel Background="{Binding Path=Frozen, RelativeSource={RelativeSource Mode=FindAncestor, AncestorType=Page}}">
+                                <TextBlock Text="Name"/>
+                                <TextBox MinWidth="70" MaxWidth="150"/>
+                                <TreeViewItem Header="Canvas Color">
+                                    <Slider x:Name="R" Width="100" Minimum="0" Maximum="255" ValueChanged="On_ValueChanged"/>
+                                    <Slider x:Name="G" Width="100" Minimum="0" Maximum="255" ValueChanged="On_ValueChanged"/>
+                                    <Slider x:Name="B" Width="100" Minimum="0" Maximum="255" ValueChanged="On_ValueChanged"/>
+                                </TreeViewItem>
+                                <TreeViewItem Header="Add Inputs">
+                                    <StackPanel x:Name="AddInputPanel"/>
+                                    <TextBox x:Name="AddInputBox" MinWidth="70" MaxWidth="150"/>
+                                    <Button Content="Add Input" FontSize="14" Click="AddInputButton_Click"/>
+                                </TreeViewItem>
+                                <Button Content="Add" Width="70" Click="AddChartButton_Click"/>
+                            </StackPanel>
+                        </Border>
+                    </TreeViewItem>
+                    <TreeViewItem x:Name="AlterChart" Header="Alter Chart">
+
+                    </TreeViewItem>
+                    <TreeViewItem Header="Remove Chart">
+                        <Frame x:Name="RemoveCharts"/>
+                    </TreeViewItem>
+                </TreeViewItem>
+            </TreeView>
+        </ScrollViewer>
+    </Border>
+
+</Page>

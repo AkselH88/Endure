@@ -9,8 +9,13 @@ namespace Endure
     public class LinesBetweenPoints
     {
         readonly LinkedMap<KeyDate, Line> lines = new LinkedMap<KeyDate, Line>();
-
+        private Brush lineColur;
         readonly int StrokeThickness = 1;
+        public LinesBetweenPoints() { lineColur = Brushes.Blue; }
+        public LinesBetweenPoints(Brush brush)
+        {
+            lineColur = brush;
+        }
         // Head and Tail Key is only relevent for whats on desplay.
         public KeyDate HeadKey { get; private set; }
         public KeyDate TailKey { get; private set; }
@@ -27,7 +32,8 @@ namespace Endure
                 Line line = new Line
                 {
                     StrokeThickness = this.StrokeThickness,
-                    Stroke = Brushes.Blue
+                    //Stroke = Brushes.Blue
+                    Stroke = lineColur
                 };
 
                 if (lines.Initialized)
@@ -145,7 +151,8 @@ namespace Endure
                 Line line = new Line
                 {
                     StrokeThickness = this.StrokeThickness,
-                    Stroke = Brushes.Blue,
+                    Stroke = lineColur,
+                    //Stroke = Brushes.Blue,
 
                     X1 = x,
                     Y1 = y,

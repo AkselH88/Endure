@@ -31,15 +31,15 @@ namespace Endure.DataAccess
             return true;
         }
 
-        public static void CreateTable(string table, string[] colomns)
+        public static void CreateTable(string table, List<string> colomns)
         {
             using (IDbConnection cnn = new SQLiteConnection(ConnectionString))
             {
                 string command = $"CREATE TABLE '{table}' (";
-                for(int i = 0; i < colomns.Length; i++)
+                for(int i = 0; i < colomns.Count; i++)
                 {
                     command += $"\"{colomns[i]}\" text";
-                    if (colomns[i] == colomns[^1])
+                    if (i == colomns.Count -1)
                         command += ");";
                     else
                         command += ", ";
@@ -66,7 +66,15 @@ namespace Endure.DataAccess
                     cnn.Execute($"ALTER TABLE '{table}' {action} \"{colomn}\" {datatype};");
             }
         }
-        
+
+        public static void RemoveTable(string table)
+        {
+            using (IDbConnection cnn = new SQLiteConnection(ConnectionString))
+            {
+                cnn.Execute($"DROP TABLE '{table}';");
+            }
+        }
+
         public static List<List<string>> LoadTable(string table, List<string> colomns)
         {
             using (IDbConnection cnn = new SQLiteConnection(ConnectionString))
@@ -86,11 +94,33 @@ namespace Endure.DataAccess
                     asRows.Add(new List<string>());
                     for (int j = 0; j < asColomns.Count; j++)
                     {
-                        asRows[i].Add(asColomns[j][i]);
+                        asRows[i].Add((asColomns[j][i] == null) ? "" : asColomns[j][i]);
                     }
                 }
 
                 return asRows;
+            }
+        }
+
+        public static string LoadValueFromTable(string table, string colomn, string keyColomn, string keyValue)
+        {
+            using (IDbConnection cnn = new SQLiteConnection(ConnectionString))
+            {
+                string command = $"SELECT \"{colomn}\" FROM '{table}' WHERE \"{keyColomn}\" = '{keyValue}';";
+
+                var output = cnn.Query<string>(command);
+
+                return output.Single();
+            }
+        }
+
+        public static void RemoveRow(string table, string keyColomn, string keyValue)
+        {
+            using (IDbConnection cnn = new SQLiteConnection(ConnectionString))
+            {
+                string command = $"DELETE FROM '{table}' WHERE \"{keyColomn}\" = '{keyValue}';";
+
+                cnn.Execute(command);
             }
         }
 
@@ -114,6 +144,16 @@ namespace Endure.DataAccess
             }
         }
 
+        public static void AddColomn(string table, string colomn)
+        {
+            using (IDbConnection cnn = new SQLiteConnection(ConnectionString))
+            {
+                string command = $"ALTER TABLE '{table}' ADD \"{colomn}\" text; ";
+                cnn.Execute(command);
+                Debug.WriteLine(command);
+            }
+        }
+
         public static void SaveToTable(string table, List<string> values)
         {
             using (IDbConnection cnn = new SQLiteConnection(ConnectionString))
@@ -127,6 +167,36 @@ namespace Endure.DataAccess
                     else
                         command += ", ";
                 }
+                cnn.Execute(command);
+                Debug.WriteLine(command);
+            }
+        }
+
+        public static void UpdateTable(string table, string colomn, string value, string keyColomn, string keyValue)
+        {
+            using (IDbConnection cnn = new SQLiteConnection(ConnectionString))
+            {
+                string command = $"UPDATE '{table}' SET";
+
+                command += $" \"{colomn}\" = '{value}'";
+
+                command += $" WHERE \"{keyColomn}\" = '{keyValue}';";
+
+                cnn.Execute(command);
+                Debug.WriteLine(command);
+            }
+        }
+
+        public static void UpdateTable(string table, string colomn, string value, string keyColomn1, string keyValue1, string keyColomn2, string keyValue2)
+        {
+            using (IDbConnection cnn = new SQLiteConnection(ConnectionString))
+            {
+                string command = $"UPDATE '{table}' SET";
+
+                command += $" \"{colomn}\" = '{value}'";
+
+                command += $" WHERE \"{keyColomn1}\" = '{keyValue1}' AND \"{keyColomn2}\" = '{keyValue2}';";
+
                 cnn.Execute(command);
                 Debug.WriteLine(command);
             }

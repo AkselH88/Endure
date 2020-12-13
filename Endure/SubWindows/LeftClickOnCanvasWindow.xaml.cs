@@ -19,6 +19,7 @@ using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
+
 using System.ComponentModel.Design;
 
 namespace Endure.SubWindows
@@ -39,17 +40,20 @@ namespace Endure.SubWindows
             Date.TextAlignment = TextAlignment.Center;
             Date.TextWrapping = TextWrapping.Wrap;
 
+            Background = new SolidColorBrush(Color.FromArgb(0x80, 0x12, 0x41, 0x71));
             text = outputText;
 
             boxes = new List<TextBox>();
             bool switching = true;
-            foreach(string name in inputNames)
+            int HeightCount = 0;
+            foreach (string name in inputNames)
             {
                 TextBox tempbox = CreateTextBox(name);
                 if (switching)
                 {
                     Left.Children.Add(CreateTextBlock(name));
                     Left.Children.Add(tempbox);
+                    HeightCount++;
                 }
                 else
                 {
@@ -59,7 +63,8 @@ namespace Endure.SubWindows
                 switching = !switching;
                 boxes.Add(tempbox);
             }
-            this.MinHeight = this.MaxHeight = 130 + (inputNames.Count / 2) * 60;
+
+            this.MinHeight = this.MaxHeight = 130 + HeightCount * 60;
             this.MinWidth = this.MaxWidth = 250;
         }
 
@@ -89,7 +94,8 @@ namespace Endure.SubWindows
                 FontSize = 14,
                 FontWeight = FontWeights.DemiBold,
                 VerticalAlignment = VerticalAlignment.Top,
-                HorizontalAlignment = HorizontalAlignment.Center
+                HorizontalAlignment = HorizontalAlignment.Center,
+                Foreground = new SolidColorBrush(Color.FromArgb(0xff, 0x62, 0xf1, 0x71))
             };
         }
 

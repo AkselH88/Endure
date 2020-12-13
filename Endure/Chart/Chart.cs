@@ -18,6 +18,7 @@ using System.Windows.Navigation;
 using System.Windows.Shapes;
 
 using System.Diagnostics;
+using Endure.Settings;
 
 
 
@@ -27,16 +28,23 @@ namespace Endure
     public class Chart
     {
         readonly Common common = new Common();
-        public StackPanelInput panelInput = new StackPanelInput();
         readonly TextOnCanvas textOnCanvas = new TextOnCanvas();
         readonly Dictionary<string, EllipsePoints> ellipses = new Dictionary<string, EllipsePoints>();
+
         readonly ChartLines Lines = new ChartLines();
+        private ChartConfigProfile ConfigProfile;
 
         private bool Initialized = false;
 
         public bool IsInitialized { get { return Initialized; } }
 
         public bool DrawChartLines { private set; get; }
+
+        public Chart() { }
+        public Chart(ChartConfigProfile config)
+        {
+            ConfigProfile = config;
+        }
 
         public void Initialize(Canvas canvas)
         {
@@ -55,24 +63,9 @@ namespace Endure
         public void AddInput(string name)
         {
             if (!ellipses.ContainsKey(name))
-            {
-                panelInput.Add(name);
-                ellipses.Add(name, new EllipsePoints());
+            {                                                                                          
+                ellipses.Add(name, new EllipsePoints(ConfigProfile.Ellipses[ConfigProfile.ChartInputs.IndexOf(name)], ConfigProfile.Lines[ConfigProfile.ChartInputs.IndexOf(name)]));
                 ellipses[name].Initialize(common);
-            }
-        }
-
-        public List<string> Inputs
-        {
-            get
-            {
-                List<string> list = new List<string>();
-                list.Add("Date");
-                foreach (var set in panelInput.Elements)
-                {
-                    list.Add(set.Item1.Name);
-                }
-                return list;
             }
         }
 
@@ -85,7 +78,7 @@ namespace Endure
                 string[] date = row[0].Split(".");
 
                 int i = 1;
-                foreach (var set in panelInput.Elements)
+                foreach (StackPanel items in ConfigProfile.WrapItems.Children)
                 {
                     if (row[i] != string.Empty)
                     {
@@ -93,26 +86,24 @@ namespace Endure
                         {
                             string[] input = row[i].Split(".");
 
-                            ellipses[set.Item1.Text].Add(date, input, textOnCanvas.HorizontalText, textOnCanvas.HorizontalTextPositions, canvas);
+                            ellipses[(items.Children[0] as TextBlock).Text].Add(date, input, textOnCanvas.HorizontalText, textOnCanvas.HorizontalTextPositions, canvas);
                         }
                         else if (row[i].Contains(","))
                         {
                             string[] input = row[i].Split(",");
 
-                            ellipses[set.Item1.Text].Add(date, input, textOnCanvas.HorizontalText, textOnCanvas.HorizontalTextPositions, canvas);
+                            ellipses[(items.Children[0] as TextBlock).Text].Add(date, input, textOnCanvas.HorizontalText, textOnCanvas.HorizontalTextPositions, canvas);
                         }
                         else
                         {
                             string[] input = { row[i], "00" };
 
-                            ellipses[set.Item1.Text].Add(date, input, textOnCanvas.HorizontalText, textOnCanvas.HorizontalTextPositions, canvas);
+                            ellipses[(items.Children[0] as TextBlock).Text].Add(date, input, textOnCanvas.HorizontalText, textOnCanvas.HorizontalTextPositions, canvas);
                         }
-                        evaluateUpdate.evaluate(ellipses[set.Item1.Text].Update, ellipses[set.Item1.Text].changeMax, ellipses[set.Item1.Text].changeMin,
-                                                ellipses[set.Item1.Text].CurrentMax, ellipses[set.Item1.Text].CurrentMin);
+                        evaluateUpdate.evaluate(ellipses[(items.Children[0] as TextBlock).Text].Update, ellipses[(items.Children[0] as TextBlock).Text].changeMax, ellipses[(items.Children[0] as TextBlock).Text].changeMin,
+                                                ellipses[(items.Children[0] as TextBlock).Text].CurrentMax, ellipses[(items.Children[0] as TextBlock).Text].CurrentMin);
 
                     }
-
-
 
                     i++;
                 }
@@ -170,37 +161,37 @@ namespace Endure
             bool OneOreMore = false;
             DateExists = false;
 
-            foreach (var set in panelInput.Elements)
+            foreach (StackPanel items in ConfigProfile.WrapItems.Children)
             {
-                DateExists = DateExists || ellipses[set.Item1.Text].ContainsDate(date);
-                if (set.Item2.Text != string.Empty)
+                DateExists = DateExists || ellipses[(items.Children[0] as TextBlock).Text].ContainsDate(date);
+                if ((items.Children[1] as TextBox).Text != string.Empty)
                 {
-                    if (set.Item2.Text.Contains("."))
+                    if ((items.Children[1] as TextBox).Text.Contains("."))
                     {
-                        string[] input = set.Item2.Text.Split(".");
-                        ellipses[set.Item1.Text].Add(date, input, textOnCanvas.HorizontalText, textOnCanvas.HorizontalTextPositions, canvas);
+                        string[] input = (items.Children[1] as TextBox).Text.Split(".");
+                        ellipses[(items.Children[0] as TextBlock).Text].Add(date, input, textOnCanvas.HorizontalText, textOnCanvas.HorizontalTextPositions, canvas);
                     }
-                    else if (set.Item2.Text.Contains(","))
+                    else if ((items.Children[1] as TextBox).Text.Contains(","))
                     {
-                        string[] input = set.Item2.Text.Split(",");
-                        ellipses[set.Item1.Text].Add(date, input, textOnCanvas.HorizontalText, textOnCanvas.HorizontalTextPositions, canvas);
+                        string[] input = (items.Children[1] as TextBox).Text.Split(",");
+                        ellipses[(items.Children[0] as TextBlock).Text].Add(date, input, textOnCanvas.HorizontalText, textOnCanvas.HorizontalTextPositions, canvas);
                     }
                     else
                     {
-                        string[] input = { set.Item2.Text, "00" };
-                        ellipses[set.Item1.Text].Add(date, input, textOnCanvas.HorizontalText, textOnCanvas.HorizontalTextPositions, canvas);
+                        string[] input = { (items.Children[1] as TextBox).Text, "00" };
+                        ellipses[(items.Children[0] as TextBlock).Text].Add(date, input, textOnCanvas.HorizontalText, textOnCanvas.HorizontalTextPositions, canvas);
 
-                        string toDebug = $"{set.Item1.Text} : {set.Item2.Text}";
+                        string toDebug = $"{(items.Children[0] as TextBlock).Text} : {(items.Children[1] as TextBox).Text}";
                         Debug.WriteLine(toDebug);
                     }
                     OneOreMore = true;
                 }
 
-                evaluateUpdate.evaluate(ellipses[set.Item1.Text].Update, ellipses[set.Item1.Text].changeMax, ellipses[set.Item1.Text].changeMin,
-                                            ellipses[set.Item1.Text].CurrentMax, ellipses[set.Item1.Text].CurrentMin);
+                evaluateUpdate.evaluate(ellipses[(items.Children[0] as TextBlock).Text].Update, ellipses[(items.Children[0] as TextBlock).Text].changeMax, ellipses[(items.Children[0] as TextBlock).Text].changeMin,
+                                            ellipses[(items.Children[0] as TextBlock).Text].CurrentMax, ellipses[(items.Children[0] as TextBlock).Text].CurrentMin);
 
-                inputs.Add(set.Item2.Text);
-                set.Item2.Text = "";
+                inputs.Add((items.Children[1] as TextBox).Text);
+                (items.Children[1] as TextBox).Text = "";
             }
 
             if(evaluateUpdate.update(common))
@@ -261,9 +252,9 @@ namespace Endure
             textOnCanvas.OnSizeChange();
             Lines.OnSizeChange(textOnCanvas.VertivalTextPosition, textOnCanvas.HorizontalTextPositions);
 
-            foreach (var set in panelInput.Elements)
+            foreach (StackPanel items in ConfigProfile.WrapItems.Children)
             {
-                ellipses[set.Item1.Text].OnSizeChange(textOnCanvas.HorizontalText, textOnCanvas.HorizontalTextPositions);
+                ellipses[(items.Children[0] as TextBlock).Text].OnSizeChange(textOnCanvas.HorizontalText, textOnCanvas.HorizontalTextPositions);
             }
         }
 
@@ -280,9 +271,9 @@ namespace Endure
             }
             Lines.ApplyHeightAndWidthLine(common, canvas);
             textOnCanvas.ReaplyTextOnCanvas(common, canvas);
-            foreach (var set in panelInput.Elements)
+            foreach (StackPanel items in ConfigProfile.WrapItems.Children)
             {
-                ellipses[set.Item1.Text].ReDraw(textOnCanvas.HorizontalText, canvas);
+                ellipses[(items.Children[0] as TextBlock).Text].ReDraw(textOnCanvas.HorizontalText, canvas);
             }
             OnSizeChange(canvas);
         }
@@ -293,9 +284,9 @@ namespace Endure
             {
                 common.OnSizeChange(canvas);
                 textOnCanvas.OnSizeChange();
-                foreach (var set in panelInput.Elements)
+                foreach (string input in ConfigProfile.ChartInputs)
                 {
-                    ellipses[set.Item1.Text].OnSizeChange(textOnCanvas.HorizontalText, textOnCanvas.HorizontalTextPositions);
+                    ellipses[input].OnSizeChange(textOnCanvas.HorizontalText, textOnCanvas.HorizontalTextPositions);
                 }
                 Lines.OnSizeChange(textOnCanvas.VertivalTextPosition, textOnCanvas.HorizontalTextPositions);
             }
@@ -329,11 +320,11 @@ namespace Endure
             EvaluateUpdate evaluateUpdate = new EvaluateUpdate();
             string[] moveText = textOnCanvas.OnMoveForward(canvas);
 
-            foreach (var set in panelInput.Elements)
+            foreach (string input in ConfigProfile.ChartInputs)
             {
-                ellipses[set.Item1.Text].OnMove(moveText, true, textOnCanvas.HorizontalText, textOnCanvas.HorizontalTextPositions, canvas);
-                evaluateUpdate.evaluate(ellipses[set.Item1.Text].Update, ellipses[set.Item1.Text].changeMax, ellipses[set.Item1.Text].changeMin,
-                                        ellipses[set.Item1.Text].CurrentMax, ellipses[set.Item1.Text].CurrentMin);
+                ellipses[input].OnMove(moveText, true, textOnCanvas.HorizontalText, textOnCanvas.HorizontalTextPositions, canvas);
+                evaluateUpdate.evaluate(ellipses[input].Update, ellipses[input].changeMax, ellipses[input].changeMin,
+                                        ellipses[input].CurrentMax, ellipses[input].CurrentMin);
             }
 
             if (evaluateUpdate.update(common))
@@ -347,11 +338,11 @@ namespace Endure
             EvaluateUpdate evaluateUpdate = new EvaluateUpdate();
             string[] moveText = textOnCanvas.OnMoveBackward(canvas);
 
-            foreach (var set in panelInput.Elements)
+            foreach (string input in ConfigProfile.ChartInputs)
             {
-                ellipses[set.Item1.Text].OnMove(moveText, false, textOnCanvas.HorizontalText, textOnCanvas.HorizontalTextPositions, canvas);
-                evaluateUpdate.evaluate(ellipses[set.Item1.Text].Update, ellipses[set.Item1.Text].changeMax, ellipses[set.Item1.Text].changeMin,
-                                        ellipses[set.Item1.Text].CurrentMax, ellipses[set.Item1.Text].CurrentMin);
+                ellipses[input].OnMove(moveText, false, textOnCanvas.HorizontalText, textOnCanvas.HorizontalTextPositions, canvas);
+                evaluateUpdate.evaluate(ellipses[input].Update, ellipses[input].changeMax, ellipses[input].changeMin,
+                                        ellipses[input].CurrentMax, ellipses[input].CurrentMin);
             }
 
             if (evaluateUpdate.update(common))
@@ -369,9 +360,9 @@ namespace Endure
             Lines.ApplyHeightAndWidthLine(common, canvas);
 
             textOnCanvas.ReaplyTextOnCanvas(common, canvas);
-            foreach (var set in panelInput.Elements)
+            foreach (string input in ConfigProfile.ChartInputs)
             {
-                ellipses[set.Item1.Text].ReDraw(textOnCanvas.HorizontalText, canvas);
+                ellipses[input].ReDraw(textOnCanvas.HorizontalText, canvas);
             }
         }
 
