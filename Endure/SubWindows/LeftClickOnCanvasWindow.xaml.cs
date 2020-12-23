@@ -30,7 +30,6 @@ namespace Endure.SubWindows
     public partial class LeftClickOnCanvasWindow : Window
     {
         List<(string, string)> text;
-        List<TextBox> boxes;
         public LeftClickOnCanvasWindow(string title, string msg, in List<string> inputNames, List<(string, string)> outputText)
         {
             InitializeComponent();
@@ -43,28 +42,27 @@ namespace Endure.SubWindows
             Background = new SolidColorBrush(Color.FromArgb(0x80, 0x12, 0x41, 0x71));
             text = outputText;
 
-            boxes = new List<TextBox>();
-            bool switching = true;
-            int HeightCount = 0;
+            bool newRow = true;
+            int rowCount = 0;
             foreach (string name in inputNames)
             {
-                TextBox tempbox = CreateTextBox(name);
-                if (switching)
+                StackPanel input = new StackPanel()
                 {
-                    Left.Children.Add(CreateTextBlock(name));
-                    Left.Children.Add(tempbox);
-                    HeightCount++;
-                }
-                else
-                {
-                    Right.Children.Add(CreateTextBlock(name));
-                    Right.Children.Add(tempbox);
-                }
-                switching = !switching;
-                boxes.Add(tempbox);
+                    Children = {
+                        CreateTextBlock(name),
+                        CreateTextBox(name)
+                    },
+                    Margin = new Thickness(5)
+                };
+                Inputs.Children.Add(input);
+
+                if(newRow)
+                    rowCount++;
+
+                newRow = !newRow;
             }
 
-            this.MinHeight = this.MaxHeight = 130 + HeightCount * 60;
+            this.MinHeight = this.MaxHeight = 130 + rowCount * 60;
             this.MinWidth = this.MaxWidth = 250;
         }
 
@@ -72,7 +70,6 @@ namespace Endure.SubWindows
         {
             TextBox box = new TextBox
             {
-                Name = name,
                 Width = 70,
                 Height = 25,
                 FontSize = 16,
@@ -89,7 +86,6 @@ namespace Endure.SubWindows
         {
             return new TextBlock
             {
-                Name = name,
                 Text = name,
                 FontSize = 14,
                 FontWeight = FontWeights.DemiBold,
@@ -117,9 +113,9 @@ namespace Endure.SubWindows
 
         private void Ok_Click(object sender, RoutedEventArgs e)
         {
-            foreach(TextBox box in boxes)
+            foreach(StackPanel panel in Inputs.Children)
             {
-                text.Add((box.Name, box.Text));
+                text.Add(((panel.Children[0] as TextBlock).Text, (panel.Children[1] as TextBox).Text));
             }
             this.Close();
         }

@@ -68,6 +68,7 @@ namespace Endure.Settings
         public Dictionary<string, ChartConfigProfile> Charts { get; private set; }
         public object Owner { set; get; }
         public object Parent { set; get; }
+        private readonly string ConfigFile = "charts.config";
 
         public bool GotChartData { get; private set; }
         public ChartsConfig()
@@ -119,34 +120,26 @@ namespace Endure.Settings
 
         private void GetTables()
         {
-            List<string> tables = SQLiteDataAccess.GetTables();
-            if (tables.Count > 0)
+            if (SQLiteDataAccess.InitDB(ConfigFile))
             {
-                List<List<string>> inputs = SQLiteDataAccess.LoadTable(ChartColors.Table, ChartColors.Colomns);
-                GotChartData = true;
-                foreach (string table in tables)
+                List<List<string>> tables = SQLiteDataAccess.LoadTable(ChartColors.CanvasTable, ChartColors.CanvasColomns, ConfigFile);
+                if (tables.Count > 0)
                 {
-                    if(table != ChartColors.Table && table != ChartColors.CanvasTable)
+                    List<List<string>> inputs = SQLiteDataAccess.LoadTable(ChartColors.Table, ChartColors.Colomns, ConfigFile);
+                    GotChartData = true;
+                    foreach (List<string> table in tables)
                     {
-                        Charts.Add(table, new ChartConfigProfile(
-                            FromString(
-                                SQLiteDataAccess.LoadValueFromTable(
-                                    ChartColors.CanvasTable,
-                                    ChartColors.CanvasColomns[1],
-                                    ChartColors.CanvasColomns[0],
-                                    table
-                                    )
-                                )));
+                        Charts.Add(table[0], new ChartConfigProfile(FromString(table[1])));
 
-                        foreach (string colomn in SQLiteDataAccess.GetColomns(table))
+                        foreach (string colomn in SQLiteDataAccess.GetColomns(table[0]))
                         {
                             if (colomn != "Date")
                             {
-                                foreach(var input in inputs)
+                                foreach (var input in inputs)
                                 {
-                                    if(input.Contains(table) && input.Contains(colomn))
+                                    if (input.Contains(table[0]) && input.Contains(colomn))
                                     {
-                                        Charts[table].Add(colomn,
+                                        Charts[table[0]].Add(colomn,
                                             new SolidColorBrush(FromString(input[ChartColors.EllipseIndex])),
                                             new SolidColorBrush(FromString(input[ChartColors.LineIndex])));
                                     }
@@ -155,10 +148,38 @@ namespace Endure.Settings
                         }
                     }
                 }
+                else
+                {
+                    GotChartData = false;
+                }
             }
             else
             {
-                GotChartData = false;
+                SQLiteDataAccess.CreateTable(ChartColors.Table, ChartColors.Colomns, ConfigFile);
+                SQLiteDataAccess.CreateTable(ChartColors.CanvasTable, ChartColors.CanvasColomns, ConfigFile);
+
+                List<string> tables = SQLiteDataAccess.GetTables();
+                if (tables.Count > 0)
+                {
+                    GotChartData = true;
+                    foreach (string table in tables)
+                    {
+                        Charts.Add(table, new ChartConfigProfile(FromString("#FF888888")));
+                        SQLiteDataAccess.SaveToTable(ChartColors.CanvasTable, new List<string> { table, "#FF888888" }, ConfigFile);
+                        foreach (string colomn in SQLiteDataAccess.GetColomns(table))
+                        {
+                            if (colomn != "Date")
+                            {
+                                Charts[table].Add(colomn, new SolidColorBrush(FromString("#FF000000")), new SolidColorBrush(FromString("#FFFFFFFF")));
+                                SQLiteDataAccess.SaveToTable(ChartColors.Table, new List<string>{table, colomn, "#FF000000", "#FFFFFFFF"}, ConfigFile);
+                            }
+                        }
+                    }
+                }
+                else
+                {
+                    GotChartData = false;
+                }
             }
         }
 
@@ -180,12 +201,21 @@ namespace Endure.Settings
             Charts["Squats"].Add("Weight", new SolidColorBrush(Color.FromArgb(0xff, 0x62, 0xa1, 0xb1)), new SolidColorBrush(Color.FromArgb(0xff, 0x6f, 0xaf, 0xbf)));
             Charts["Squats"].Add("Reps", new SolidColorBrush(Color.FromArgb(0xff, 0xc2, 0x41, 0x7f)), new SolidColorBrush(Color.FromArgb(0xff, 0xb2, 0x4f, 0x80)));
 
-            SQLiteDataAccess.CreateTable(ChartColors.Table, ChartColors.Colomns);
-            SQLiteDataAccess.CreateTable(ChartColors.CanvasTable, ChartColors.CanvasColomns);
+            if(SQLiteDataAccess.InitDB(ConfigFile))
+            {
+                List<string> tables = SQLiteDataAccess.GetTables(ConfigFile);
+                foreach(string table in tables)
+                {
+                    SQLiteDataAccess.RemoveTable(table, ConfigFile);
+                }
+            }
+
+            SQLiteDataAccess.CreateTable(ChartColors.Table, ChartColors.Colomns, ConfigFile);
+            SQLiteDataAccess.CreateTable(ChartColors.CanvasTable, ChartColors.CanvasColomns, ConfigFile);
             foreach (var chart in Charts)
             {
                 SQLiteDataAccess.CreateTable(chart.Key, chart.Value.ChartInputs.Prepend("Date").ToList());
-                SQLiteDataAccess.SaveToTable(ChartColors.CanvasTable, new List<string> { chart.Key, chart.Value.CanvasBackGround.ToString() });
+                SQLiteDataAccess.SaveToTable(ChartColors.CanvasTable, new List<string> { chart.Key, chart.Value.CanvasBackGround.ToString() }, ConfigFile);
 
                 for (int i = 0; i < chart.Value.ChartInputs.Count; i++)
                 {
@@ -195,14 +225,14 @@ namespace Endure.Settings
                         chart.Value.ChartInputs[i],
                         chart.Value.Ellipses[i].ToString(),
                         chart.Value.Lines[i].ToString()
-                    });
+                    }, ConfigFile);
                 }
             }
         }
 
         public void UpdateChartColor(string name, Brush brush)
         {
-            SQLiteDataAccess.UpdateTable(ChartColors.CanvasTable, ChartColors.CanvasColomns[1], brush.ToString(), ChartColors.CanvasColomns[0], name);
+            SQLiteDataAccess.UpdateTable(ChartColors.CanvasTable, ChartColors.CanvasColomns[1], brush.ToString(), ChartColors.CanvasColomns[0], name, ConfigFile);
         }
 
         //static public List<string> Colomns = new List<string> { "Chart", "Input", "Ellipse", "Line" };
@@ -215,7 +245,7 @@ namespace Endure.Settings
         /// <param name="brush"></param>
         public void UpdateChartInputColor(string chart, string input, Brush brush, int identifier = 2)
         {
-            SQLiteDataAccess.UpdateTable(ChartColors.Table, ChartColors.Colomns[identifier], brush.ToString(), ChartColors.Colomns[0], chart, ChartColors.Colomns[1], input);
+            SQLiteDataAccess.UpdateTable(ChartColors.Table, ChartColors.Colomns[identifier], brush.ToString(), ChartColors.Colomns[0], chart, ChartColors.Colomns[1], input, ConfigFile);
         }
 
         public void OpenCreateTableWindow()
@@ -230,7 +260,7 @@ namespace Endure.Settings
                 Charts.Add(name, new ChartConfigProfile(canvasBackGround, inputs, ellipseBrush, lineBrush));
                 (Owner as ChartPage).UpdateChartSelect(name, true);
                 SQLiteDataAccess.CreateTable(name, inputs.Prepend("Date").ToList());
-                SQLiteDataAccess.SaveToTable(ChartColors.CanvasTable, new List<string> { name, canvasBackGround.ToString() });
+                SQLiteDataAccess.SaveToTable(ChartColors.CanvasTable, new List<string> { name, canvasBackGround.ToString() }, ConfigFile);
                 for (int i = 0; i < inputs.Count; i++)
                 {
                     SQLiteDataAccess.SaveToTable(ChartColors.Table, new List<string>
@@ -239,7 +269,7 @@ namespace Endure.Settings
                         inputs[i],
                         ellipseBrush[i].ToString(),
                         lineBrush[i].ToString()
-                    });
+                    }, ConfigFile);
                 }
                 
                 if (!GotChartData)
@@ -258,10 +288,18 @@ namespace Endure.Settings
                 input,
                 ellipseBrush.ToString(),
                 lineBrush.ToString()
-            });
+            }, ConfigFile);
+
             SQLiteDataAccess.AddColomn(name, input);
             Charts[name].Add(input, ellipseBrush, lineBrush);
             (Owner as ChartPage).charts[name].AddInput(input);
+        }
+
+        public void RemoveInput(string name, string input)
+        {
+            Charts[name].Remove(input);
+            SQLiteDataAccess.RemoveColomn(name, input);
+            SQLiteDataAccess.RemoveRow(ChartColors.Table, ChartColors.Colomns[0], name, ChartColors.Colomns[1], input, ConfigFile);
         }
 
         public void RemoveChart(string name)
@@ -270,8 +308,8 @@ namespace Endure.Settings
             {
                 Charts.Remove(name);
                 SQLiteDataAccess.RemoveTable(name);
-                SQLiteDataAccess.RemoveRow(ChartColors.Table, ChartColors.Colomns[0], name);
-                SQLiteDataAccess.RemoveRow(ChartColors.CanvasTable, ChartColors.CanvasColomns[0], name);
+                SQLiteDataAccess.RemoveRow(ChartColors.Table, ChartColors.Colomns[0], name, ConfigFile);
+                SQLiteDataAccess.RemoveRow(ChartColors.CanvasTable, ChartColors.CanvasColomns[0], name, ConfigFile);
                 
                 if (Charts.Count == 0)
                 {
@@ -322,7 +360,18 @@ namespace Endure.Settings
         public void AddToInputPanel(string name)
         {
             StackPanel Items = new StackPanel()
-            { Margin = new Thickness() { Left = 5, Right = 5 }, Orientation = Orientation.Vertical, Children = { CreateTextBlock(name), CreateTextBox(name) } };
+            { 
+                Margin = new Thickness()
+                {
+                    Left = 5, Right = 5
+                },
+                Orientation = Orientation.Vertical,
+                Children =
+                {
+                    CreateTextBlock(name),
+                    CreateTextBox(name)
+                }
+            };
 
             WrapItems.Children.Add(Items);
         }
@@ -337,16 +386,46 @@ namespace Endure.Settings
             ChartInputs.Add(name);
             Ellipses.Add(ellipse);
             Lines.Add(line);
-            StackPanel Items = new StackPanel() { Margin = new Thickness() { Left = 5, Right = 5 }, Orientation = Orientation.Vertical, Children = { CreateTextBlock(name), CreateTextBox(name) } };
+            StackPanel Items = new StackPanel()
+            {
+                Margin = new Thickness()
+                {
+                    Left = 5,
+                    Right = 5
+                },
+                Orientation = Orientation.Vertical,
+                Children =
+                {
+                    CreateTextBlock(name),
+                    CreateTextBox(name)
+                }
+            };
             
             WrapItems.Children.Add(Items);
+        }
+
+        public void Remove(string input)
+        {
+            int index = ChartInputs.IndexOf(input);
+            ChartInputs.RemoveAt(index);
+            Ellipses.RemoveAt(index);
+            Lines.RemoveAt(index);
+            WrapItems.Children.RemoveAt(index);
+            /*foreach(StackPanel item in WrapItems.Children)
+            {
+                if((item.Children[0] as TextBlock).Text == input)
+                {
+                    WrapItems.Children.Remove(item);
+                    break;
+                }
+            }*/
         }
 
         private TextBox CreateTextBox(string name)
         {
             TextBox box = new TextBox
             {
-                Name = name,
+                //Name = name,
                 Width = 70,
                 Height = 25,
                 VerticalAlignment = VerticalAlignment.Center
@@ -361,7 +440,7 @@ namespace Endure.Settings
         {
             return new TextBlock
             {
-                Name = name,
+                //Name = name,
                 Text = name,
                 FontSize = 14,
                 FontWeight = FontWeights.DemiBold,

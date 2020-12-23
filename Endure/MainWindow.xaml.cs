@@ -40,7 +40,7 @@ namespace Endure
         MainWindowConfig MainConfig;
         public List<Page> MainPages;
         List<Page> SettingsTabPages;
-        CreateNewChart InitChartPage = new CreateNewChart();
+        CreateNewChart InitChartPage;
 
         public MainWindow()
         {
@@ -57,6 +57,8 @@ namespace Endure
             MainPages = new List<Page>() { new ChartPage(MainConfig.Charts) { Owner = this }, new Page() { Background = Brushes.Black } };
 
             SettingsTabPages = new List<Page>() { new SettingsPage(MainConfig) };
+            InitChartPage = new CreateNewChart(MainConfig.Charts, SettingsTabPages[0]);
+
             SettingsFrame.Visibility = Visibility.Collapsed;
 
             MainConfig.Ininitiolize();

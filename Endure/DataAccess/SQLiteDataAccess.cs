@@ -16,14 +16,15 @@ namespace Endure.DataAccess
         private readonly static string DBFile = "endure.sqlite";
         private readonly static string ConnectionString = $"Data Source={DBFile};Version=3;";
 
-        public static bool InitDB()
+        public static bool InitDB(string DataBase = "")
         {
-            string path = Directory.GetCurrentDirectory() + "\\" + DBFile;
+            string file = (DataBase == string.Empty) ? DBFile : DataBase;
+            string path = Directory.GetCurrentDirectory() + "\\" + file;
             string[] files = Directory.GetFiles(Directory.GetCurrentDirectory());
 
             if (!files.Contains(path))
             {
-                SQLiteConnection.CreateFile(DBFile);
+                SQLiteConnection.CreateFile(file);
 
                 return false;
             }
@@ -31,9 +32,14 @@ namespace Endure.DataAccess
             return true;
         }
 
-        public static void CreateTable(string table, List<string> colomns)
+        private static string GetConnectionString(string DataBase)
         {
-            using (IDbConnection cnn = new SQLiteConnection(ConnectionString))
+            return DataBase == string.Empty ? ConnectionString : $"Data Source={DataBase};Version=3;";
+        }
+
+        public static void CreateTable(string table, List<string> colomns, string db = "")
+        {
+            using (IDbConnection cnn = new SQLiteConnection(GetConnectionString(db)))
             {
                 string command = $"CREATE TABLE '{table}' (";
                 for(int i = 0; i < colomns.Count; i++)
@@ -50,34 +56,17 @@ namespace Endure.DataAccess
             }
         }
 
-        /// <summary>
-        /// key represent table
-        /// string "action" options ADD, DROP COLUMN, ALTER COLUMN
-        /// the action ADD and ALTER COLUMN require a datatype.
-        /// datatypes are {}
-        /// </summary>
-        public static void AlterTable(string table, string action, string colomn, string datatype = "")
+        public static void RemoveTable(string table, string db = "")
         {
-            using (IDbConnection cnn = new SQLiteConnection(ConnectionString))
-            {
-                if(datatype == "")
-                    cnn.Execute($"ALTER TABLE '{table}' {action} \"{colomn}\";");
-                else
-                    cnn.Execute($"ALTER TABLE '{table}' {action} \"{colomn}\" {datatype};");
-            }
-        }
-
-        public static void RemoveTable(string table)
-        {
-            using (IDbConnection cnn = new SQLiteConnection(ConnectionString))
+            using (IDbConnection cnn = new SQLiteConnection(GetConnectionString(db)))
             {
                 cnn.Execute($"DROP TABLE '{table}';");
             }
         }
 
-        public static List<List<string>> LoadTable(string table, List<string> colomns)
+        public static List<List<string>> LoadTable(string table, List<string> colomns, string db = "")
         {
-            using (IDbConnection cnn = new SQLiteConnection(ConnectionString))
+            using (IDbConnection cnn = new SQLiteConnection(GetConnectionString(db)))
             {
                 List<List<string>> asColomns = new List<List<string>>();
                 List<List<string>> asRows = new List<List<string>>();
@@ -86,7 +75,6 @@ namespace Endure.DataAccess
                     var output = cnn.Query<string>($"SELECT \"{colomn}\" FROM '{table}';", new DynamicParameters());
 
                     asColomns.Add(output.ToList());
-                    
                 }
 
                 for (int i = 0; i < asColomns[0].Count; i++)
@@ -102,9 +90,25 @@ namespace Endure.DataAccess
             }
         }
 
-        public static string LoadValueFromTable(string table, string colomn, string keyColomn, string keyValue)
+        public static List<List<string>> LoadTableByColomn(string table, List<string> colomns, string db = "")
         {
-            using (IDbConnection cnn = new SQLiteConnection(ConnectionString))
+            using (IDbConnection cnn = new SQLiteConnection(GetConnectionString(db)))
+            {
+                List<List<string>> asColomns = new List<List<string>>();
+                foreach (string colomn in colomns)
+                {
+                    var output = cnn.Query<string>($"SELECT \"{colomn}\" FROM '{table}';", new DynamicParameters());
+
+                    asColomns.Add(output.ToList());
+                }
+
+                return asColomns;
+            }
+        }
+
+        public static string LoadValueFromTable(string table, string colomn, string keyColomn, string keyValue, string db = "")
+        {
+            using (IDbConnection cnn = new SQLiteConnection(GetConnectionString(db)))
             {
                 string command = $"SELECT \"{colomn}\" FROM '{table}' WHERE \"{keyColomn}\" = '{keyValue}';";
 
@@ -114,9 +118,9 @@ namespace Endure.DataAccess
             }
         }
 
-        public static void RemoveRow(string table, string keyColomn, string keyValue)
+        public static void RemoveRow(string table, string keyColomn, string keyValue, string db = "")
         {
-            using (IDbConnection cnn = new SQLiteConnection(ConnectionString))
+            using (IDbConnection cnn = new SQLiteConnection(GetConnectionString(db)))
             {
                 string command = $"DELETE FROM '{table}' WHERE \"{keyColomn}\" = '{keyValue}';";
 
@@ -124,9 +128,19 @@ namespace Endure.DataAccess
             }
         }
 
-        public static List<string> GetTables()
+        public static void RemoveRow(string table, string keyColomn1, string keyValue1, string keyColomn2, string keyValue2, string db = "")
         {
-            using (IDbConnection cnn = new SQLiteConnection(ConnectionString))
+            using (IDbConnection cnn = new SQLiteConnection(GetConnectionString(db)))
+            {
+                string command = $"DELETE FROM '{table}' WHERE \"{keyColomn1}\" = '{keyValue1}' AND \"{keyColomn2}\" = '{keyValue2}';";
+
+                cnn.Execute(command);
+            }
+        }
+
+        public static List<string> GetTables(string db = "")
+        {
+            using (IDbConnection cnn = new SQLiteConnection(GetConnectionString(db)))
             {
                 var output = cnn.Query<string>("SELECT name FROM sqlite_master WHERE type = 'table' AND name NOT LIKE 'sqlite_%';", new DynamicParameters());
                 //Debug.WriteLine(output.ToString());
@@ -134,9 +148,9 @@ namespace Endure.DataAccess
             }
         }
 
-        public static List<string> GetColomns(string table)
+        public static List<string> GetColomns(string table, string db = "")
         {
-            using (IDbConnection cnn = new SQLiteConnection(ConnectionString))
+            using (IDbConnection cnn = new SQLiteConnection(GetConnectionString(db)))
             {
                 var output = cnn.Query<string>($"SELECT name FROM PRAGMA_TABLE_INFO('{table}');", new DynamicParameters());
                 //Debug.WriteLine(output.ToString());
@@ -144,19 +158,43 @@ namespace Endure.DataAccess
             }
         }
 
-        public static void AddColomn(string table, string colomn)
+        public static void AddColomn(string table, string colomn, string db = "")
         {
-            using (IDbConnection cnn = new SQLiteConnection(ConnectionString))
+            using (IDbConnection cnn = new SQLiteConnection(GetConnectionString(db)))
             {
-                string command = $"ALTER TABLE '{table}' ADD \"{colomn}\" text; ";
+                string command = $"ALTER TABLE '{table}' ADD \"{colomn}\" text;";
                 cnn.Execute(command);
                 Debug.WriteLine(command);
             }
         }
 
-        public static void SaveToTable(string table, List<string> values)
+        public static void RemoveColomn(string table, string colomn, string db = "")
         {
+            List<string> colomns = GetColomns(table, db);
+            colomns.Remove(colomn);
+            List<List<string>> values = LoadTable(table, colomns, db);
+
+            RemoveTable(table, db);
+            CreateTable(table, colomns, db);
+
+            foreach(List<string> row in values)
+            {
+                SaveToTable(table, row, db);
+            }
+
+            // Can not use this matod in SQLite need a work around
+            /*
             using (IDbConnection cnn = new SQLiteConnection(ConnectionString))
+            {
+                string command = $"ALTER TABLE '{table}' DROP COLOMN \"{colomn}\";";
+                cnn.Execute(command);
+                Debug.WriteLine(command);
+            }*/
+        }
+
+        public static void SaveToTable(string table, List<string> values, string db = "")
+        {
+            using (IDbConnection cnn = new SQLiteConnection(GetConnectionString(db)))
             {
                 string command = $"INSERT INTO '{table}' VALUES (";
                 for (int i = 0; i < values.Count; i++)
@@ -172,9 +210,9 @@ namespace Endure.DataAccess
             }
         }
 
-        public static void UpdateTable(string table, string colomn, string value, string keyColomn, string keyValue)
+        public static void UpdateTable(string table, string colomn, string value, string keyColomn, string keyValue, string db = "")
         {
-            using (IDbConnection cnn = new SQLiteConnection(ConnectionString))
+            using (IDbConnection cnn = new SQLiteConnection(GetConnectionString(db)))
             {
                 string command = $"UPDATE '{table}' SET";
 
@@ -187,9 +225,9 @@ namespace Endure.DataAccess
             }
         }
 
-        public static void UpdateTable(string table, string colomn, string value, string keyColomn1, string keyValue1, string keyColomn2, string keyValue2)
+        public static void UpdateTable(string table, string colomn, string value, string keyColomn1, string keyValue1, string keyColomn2, string keyValue2, string db = "")
         {
-            using (IDbConnection cnn = new SQLiteConnection(ConnectionString))
+            using (IDbConnection cnn = new SQLiteConnection(GetConnectionString(db)))
             {
                 string command = $"UPDATE '{table}' SET";
 
@@ -202,9 +240,9 @@ namespace Endure.DataAccess
             }
         }
 
-        public static void SaveToTableAtSpesifiedRow(string table, List<string> colomns, List<string> values)
+        public static void SaveToTableAtSpesifiedRow(string table, List<string> colomns, List<string> values, string db = "")
         {
-            using (IDbConnection cnn = new SQLiteConnection(ConnectionString))
+            using (IDbConnection cnn = new SQLiteConnection(GetConnectionString(db)))
             {
                 string command = $"UPDATE '{table}' SET";
 

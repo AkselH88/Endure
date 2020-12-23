@@ -193,6 +193,8 @@ namespace Endure.Pages
                     {
                         if ((chartContent.Children[j] as TreeViewItem).Header as string == (toRemove.Items[i] as CheckBox).Content as string)
                         {
+                            string input = (chartContent.Children[j] as TreeViewItem).Header.ToString();
+                            Config.Charts.RemoveInput(chartName, input);
                             chartContent.Children.Remove((chartContent.Children[j] as TreeViewItem));
                             break;
                         }
@@ -495,6 +497,16 @@ namespace Endure.Pages
                 }
             }
 
+        }
+
+        public void AddContent(string name, ChartConfigProfile chart)
+        {
+            AlterChart.Items.Add(CreateAlterChartViewItem(name, Config.Charts.Charts[name]));
+            (RemoveCharts.Content as StackPanel).Children.Insert((RemoveCharts.Content as StackPanel).Children.Count - 1, new CheckBox()
+            {
+                IsChecked = false,
+                Content = name
+            });
         }
         /* #################  ADD END  ########################## */
 

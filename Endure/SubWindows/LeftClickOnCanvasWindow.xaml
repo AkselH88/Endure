@@ -22,9 +22,9 @@
             <RowDefinition Height="30"/>
             <RowDefinition Height="20"/>
         </Grid.RowDefinitions>
+        
         <TextBlock x:Name="Date" FontSize="14" Text="Date" FontWeight="Bold" Grid.Column="1" Grid.Row="1" Grid.ColumnSpan="2" Foreground="AntiqueWhite"/>
-        <StackPanel x:Name="Left" Grid.Row="2" Grid.Column="1" Orientation="Vertical" VerticalAlignment="Top" Margin="5" Height="auto"/>
-        <StackPanel x:Name="Right" Grid.Row="2" Grid.Column="2" Orientation="Vertical" VerticalAlignment="Top" Margin="5" Height="auto"/>
+        <WrapPanel x:Name="Inputs" HorizontalAlignment="Center" Grid.Row="2" Grid.Column="1" Grid.ColumnSpan="2" Orientation="Horizontal" VerticalAlignment="Top" Height="auto"/>
         <Button x:Name="Ok" Content="Add" Margin="5" Grid.Column="1" Grid.Row="3" Grid.ColumnSpan="2" Height="20" Width="50"
                 Click="Ok_Click"/>
     </Grid>

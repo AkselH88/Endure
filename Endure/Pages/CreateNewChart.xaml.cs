@@ -11,6 +11,8 @@ using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
 
+using Endure.Settings;
+
 namespace Endure.Pages
 {
     /// <summary>
@@ -18,10 +20,14 @@ namespace Endure.Pages
     /// </summary>
     public partial class CreateNewChart : Page
     {
-        public CreateNewChart()
+        ChartsConfig Config;
+        object Friend;
+        public CreateNewChart(ChartsConfig config, object friend)
         {
             InitializeComponent();
 
+            Config = config;
+            Friend = friend;
             var brush = ChartBorder.Background.GetAsFrozen();
 
             ChartR.Value = ((SolidColorBrush)brush).Color.R;
@@ -33,17 +39,44 @@ namespace Endure.Pages
         {
             TreeViewItem item = new TreeViewItem();
 
-            item.Header = name;
-            item.Items.Add(new TextBox() { Text = "Ellipse" });
+            item.Header = NewBorderTextBlock(name);
+            item.Items.Add(NewBorderTextBlock("Ellipse"));
             item.Items.Add(NewInputSlider());
             item.Items.Add(NewInputSlider());
             item.Items.Add(NewInputSlider());
-            item.Items.Add(new TextBox() { Text = "Line" });
+            item.Items.Add(NewBorderTextBlock("Line"));
             item.Items.Add(NewInputSlider());
             item.Items.Add(NewInputSlider());
             item.Items.Add(NewInputSlider());
 
             return item;
+        }
+
+        private Border NewBorderTextBlock(string text)
+        {
+            TextBlock textBlock = new TextBlock()
+            {
+                Text = text,
+                Padding = new Thickness(1,1,1,1),
+                Foreground = Brushes.White,
+                HorizontalAlignment = HorizontalAlignment.Center
+            };
+
+            Border border = new Border()
+            {
+                BorderThickness = new Thickness(2, 2, 2, 2),
+                CornerRadius = new CornerRadius(3),
+                BorderBrush = Brushes.Green,
+                Background = new SolidColorBrush(Color.FromArgb(0x88, 0x66, 0x66, 0x66)),
+                Margin = new Thickness(0, 3, 0, 3),
+
+                MinWidth = 60
+            };
+
+
+            border.Child = textBlock;
+
+            return border;
         }
 
         private Slider NewInputSlider()
@@ -87,7 +120,7 @@ namespace Endure.Pages
         {
             StackPanel panel = new StackPanel();
 
-            panel.Children.Add(new TextBlock() { Text = name, HorizontalAlignment = HorizontalAlignment.Center });
+            panel.Children.Add(NewBorderTextBlock(name));
 
             Brush brush = new SolidColorBrush(Color.FromArgb(0xff, 0x88, 0x88, 0x88));
             StackPanel dotedLine = new StackPanel() { Orientation = Orientation.Horizontal, Background = Brushes.Transparent };   // index 1
@@ -117,7 +150,31 @@ namespace Endure.Pages
 
         private void Button_Click_Save_Chart(object sender, RoutedEventArgs e)
         {
-            throw new NotImplementedException();
+            if(HeaderPanelBox.Text != string.Empty)
+            {
+                List<string> inputs = new List<string>();
+                List<Brush> ellipseBrushes = new List<Brush>();
+                List<Brush> lineBrushes = new List<Brush>();
+                foreach(TreeViewItem tree in InputTree.Items)
+                {
+                    inputs.Add(((tree.Header as Border).Child as TextBlock).Text);
+                    ellipseBrushes.Add(new SolidColorBrush(Color.FromArgb(0xff, 
+                        (byte)(tree.Items[1] as Slider).Value,
+                        (byte)(tree.Items[2] as Slider).Value,
+                        (byte)(tree.Items[3] as Slider).Value)));
+                    lineBrushes.Add(new SolidColorBrush(Color.FromArgb(0xff,
+                        (byte)(tree.Items[5] as Slider).Value,
+                        (byte)(tree.Items[6] as Slider).Value,
+                        (byte)(tree.Items[7] as Slider).Value)));
+                }
+                Config.AddChart(HeaderPanelBox.Text, ChartBorder.Background.Clone(), inputs, ellipseBrushes, lineBrushes);
+                (Friend as SettingsPage).AddContent(HeaderPanelBox.Text, Config.Charts[HeaderPanelBox.Text]);
+
+                InputTree.Items.Clear();
+                VisualInput.Children.Clear();
+
+                HeaderPanelBox.Text = "";
+            }
         }
 
         private void Chart_ValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e)
