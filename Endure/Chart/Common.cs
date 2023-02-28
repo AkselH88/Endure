@@ -19,6 +19,7 @@ namespace Endure
         public int Padding { get; set; }
         public int VerticalElements { get; set; }
         public int HorizontalElements { get; set; }
+        public int Jump { get; set; }
         public int CurrentMax { get; set; }
         public int CurrentMin { get; set; }
         public double Height { get; private set; }
@@ -32,6 +33,7 @@ namespace Endure
             this.Padding = Defoult.Padding;
             this.VerticalElements = Defoult.VerticalElements;
             this.HorizontalElements = Defoult.HorizontalElements;
+            this.Jump = Defoult.Jump;
 
             this.CurrentMax = Defoult.CurrentMax;
             this.CurrentMin = Defoult.CurrentMin;
@@ -49,6 +51,7 @@ namespace Endure
         public static readonly int Offset = 20;
         public static readonly int VerticalElements = 10;
         public static readonly int HorizontalElements = 10;
+        public static readonly int Jump = 1;
         public static readonly int FontSize = 14;
         public static readonly int Padding = 4;
 

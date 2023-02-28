@@ -176,7 +176,7 @@ namespace Endure
 
                 HorizontalText.Add($"{horizontalTextBlock[i - 1].Text}.{horizontalTextBlock[i - 1].ToolTip}");
             }
-            
+
             DayOffset++;
             horizontalTextBlock[^1].ToolTip = $"{DateTime.Today.AddDays(DayOffset).Month}.{DateTime.Today.AddDays(DayOffset).Year}";
             horizontalTextBlock[^1].Text = $"{DateTime.Today.AddDays(DayOffset).Day}";
@@ -283,8 +283,8 @@ namespace Endure
             tempBox.Arrange(new Rect(tempBox.DesiredSize));
             common.VerticalOffset = tempBox.ActualWidth;
 
-            double maxScale = common.CurrentMax / common.VerticalElements;
-            double minScale = common.CurrentMin / common.VerticalElements;
+            //double maxScale = common.CurrentMax / common.VerticalElements;
+            //double minScale = common.CurrentMin / common.VerticalElements;
             double scale = (common.CurrentMax - common.CurrentMin) / common.VerticalElements;
             foreach (TextBlock block in verticalTextBlock)
             {

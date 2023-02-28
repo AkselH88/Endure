@@ -36,6 +36,7 @@ namespace Endure.Pages
     {
         public Dictionary<string, Chart> charts = new Dictionary<string, Chart>();
         ChartsConfig ChartsConfig;
+        public ContextMenu JumpContextMenu { get; set; }
         string selectedDate = string.Empty;
         string currentChart;
 
@@ -50,6 +51,7 @@ namespace Endure.Pages
         public void Initiolize(ChartsConfig chartsConfig)
         {
             ChartsConfig = chartsConfig;
+            JumpContextMenu = CreateJumpContextMenu();
             InitializeCharts();
 
             ChartSelect.SelectedItem = currentChart;
@@ -231,12 +233,12 @@ namespace Endure.Pages
             DropCalender.IsDropDownOpen = false;
         }
 
-        private void scroll_left_Click(object sender, RoutedEventArgs e)
+        private void jump_left_Click(object sender, RoutedEventArgs e)
         {
             charts[currentChart].OnMoveBackward(canvas);
         }
 
-        private void scroll_right_Click(object sender, RoutedEventArgs e)
+        private void jump_right_Click(object sender, RoutedEventArgs e)
         {
             charts[currentChart].OnMoveForward(canvas);
         }
@@ -324,6 +326,57 @@ namespace Endure.Pages
             {
                 ScrollViewer viewer = (e.OriginalSource as ScrollViewer);
                 viewer.MaxHeight = ((sender as ComboBox).ActualHeight) * 5;
+            }
+        }
+
+        private ContextMenu CreateJumpContextMenu()
+        {
+            ContextMenu jcm = new ContextMenu()
+            {
+                Items =
+                {
+                    new MenuItem()
+                    {
+                        Header = "One Day",
+                        IsChecked = true
+                    },
+                    new MenuItem()
+                    {
+                        Header = "One Week",
+                        IsChecked = false
+                    },
+                    new MenuItem()
+                    {
+                        Header = "One Month",
+                        IsChecked = false,
+                    }
+                }
+            };
+
+            foreach(MenuItem mi in jcm.Items)
+            {
+                mi.Click += Jump_MenuItem_Click;
+            }
+
+            return jcm;
+        }
+        
+        private void Jump_MenuItem_Click(object sender, RoutedEventArgs e)
+        {
+            if(!(sender as MenuItem).IsChecked)
+            {
+                foreach(MenuItem item in ((sender as MenuItem).Parent as ContextMenu).Items)
+                {
+                    if(item.IsChecked)
+                    {
+                        item.IsChecked = false;
+                    }
+                    else if(item.Equals(sender))
+                    {
+                        item.IsChecked = true;
+                        charts[currentChart].NewJumpDictanse(item.Header.ToString());
+                    }
+                }
             }
         }
     }

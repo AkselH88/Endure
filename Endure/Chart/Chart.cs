@@ -35,6 +35,7 @@ namespace Endure
         private ChartConfigProfile ConfigProfile;
 
         private bool Initialized = false;
+        private bool EvaluateJump = false;
 
         public bool IsInitialized { get { return Initialized; } }
 
@@ -315,16 +316,44 @@ namespace Endure
             return false;
         }
 
+        public void NewJumpDictanse(string dictanse)
+        {
+            if (dictanse == "One Day")
+            {
+                common.Jump = 1;
+                EvaluateJump = false;
+            }
+            else if (dictanse == "One Week")
+            {
+                common.Jump = 7;
+                EvaluateJump = false;
+            }
+            else if (dictanse == "One Month")
+            {
+                EvaluateJump = true;
+            }
+        }
+
         public void OnMoveForward(Canvas canvas)
         {
             EvaluateUpdate evaluateUpdate = new EvaluateUpdate();
-            string[] moveText = textOnCanvas.OnMoveForward(canvas);
 
-            foreach (string input in ConfigProfile.ChartInputs)
+            if(EvaluateJump)
             {
-                ellipses[input].OnMove(moveText, true, textOnCanvas.HorizontalText, textOnCanvas.HorizontalTextPositions, canvas);
-                evaluateUpdate.evaluate(ellipses[input].Update, ellipses[input].changeMax, ellipses[input].changeMin,
-                                        ellipses[input].CurrentMax, ellipses[input].CurrentMin);
+                string[] jumpfrom = textOnCanvas.HorizontalText[0].Split(".");
+                common.Jump = DateTime.DaysInMonth(int.Parse(jumpfrom[2]), int.Parse(jumpfrom[1]));
+            }
+
+            for (int i = 0; i < common.Jump; i++)
+            {
+                string[] moveText = textOnCanvas.OnMoveForward(canvas);
+
+                foreach (string input in ConfigProfile.ChartInputs)
+                {
+                    ellipses[input].OnMove(moveText, true, textOnCanvas.HorizontalText, textOnCanvas.HorizontalTextPositions, canvas);
+                    evaluateUpdate.evaluate(ellipses[input].Update, ellipses[input].changeMax, ellipses[input].changeMin,
+                                            ellipses[input].CurrentMax, ellipses[input].CurrentMin);
+                }
             }
 
             if (evaluateUpdate.update(common))
@@ -336,13 +365,35 @@ namespace Endure
         public void OnMoveBackward(Canvas canvas)
         {
             EvaluateUpdate evaluateUpdate = new EvaluateUpdate();
-            string[] moveText = textOnCanvas.OnMoveBackward(canvas);
 
-            foreach (string input in ConfigProfile.ChartInputs)
+            if (EvaluateJump)
             {
-                ellipses[input].OnMove(moveText, false, textOnCanvas.HorizontalText, textOnCanvas.HorizontalTextPositions, canvas);
-                evaluateUpdate.evaluate(ellipses[input].Update, ellipses[input].changeMax, ellipses[input].changeMin,
-                                        ellipses[input].CurrentMax, ellipses[input].CurrentMin);
+                string[] jumpfrom = textOnCanvas.HorizontalText[0].Split(".");
+                int month = int.Parse(jumpfrom[1]);
+                int year = int.Parse(jumpfrom[2]);
+                if(month == 1)
+                {
+                    month = 12;
+                    year--;
+                }
+                else
+                {
+                    month--;
+                }
+
+                common.Jump = DateTime.DaysInMonth(year, month);
+            }
+
+            for (int i = 0; i < common.Jump; i++)
+            {
+                string[] moveText = textOnCanvas.OnMoveBackward(canvas);
+
+                foreach (string input in ConfigProfile.ChartInputs)
+                {
+                    ellipses[input].OnMove(moveText, false, textOnCanvas.HorizontalText, textOnCanvas.HorizontalTextPositions, canvas);
+                    evaluateUpdate.evaluate(ellipses[input].Update, ellipses[input].changeMax, ellipses[input].changeMin,
+                                            ellipses[input].CurrentMax, ellipses[input].CurrentMin);
+                }
             }
 
             if (evaluateUpdate.update(common))
