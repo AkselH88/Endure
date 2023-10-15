@@ -1,24 +1,10 @@
-﻿using System;
+﻿using Endure.Settings;
 using System.Collections.Generic;
-using System.Text;
+using System.Diagnostics;
 using System.Windows;
 using System.Windows.Controls;
-using System.Windows.Data;
-using System.Windows.Documents;
-using System.Windows.Input;
 using System.Windows.Media;
-using System.Windows.Media.Imaging;
-using System.Windows.Navigation;
 using System.Windows.Shapes;
-using System.ComponentModel.Design;
-using System.Diagnostics;
-using System.Threading;
-using System.Threading.Tasks;
-
-
-using Endure.DataAccess;
-using Endure.SubWindows;
-using Endure.Settings;
 
 namespace Endure.Pages
 {
@@ -115,25 +101,25 @@ namespace Endure.Pages
 
         private void Add_Click(object sender, RoutedEventArgs e)
         {
-            foreach(var item in (((((sender as Button).Parent as TreeViewItem).Parent as StackPanel).Parent as Border).Parent as TreeViewItem).Items)
+            foreach (var item in (((((sender as Button).Parent as TreeViewItem).Parent as StackPanel).Parent as Border).Parent as TreeViewItem).Items)
             {
-                if(item is TreeViewItem)
+                if (item is TreeViewItem)
                 {
-                    if((item as TreeViewItem).Name == "remove")
+                    if ((item as TreeViewItem).Name == "remove")
                     {
-                        if((((sender as Button).Parent as TreeViewItem).Items[1] as TextBox).Text != string.Empty)
+                        if ((((sender as Button).Parent as TreeViewItem).Items[1] as TextBox).Text != string.Empty)
                         {
                             bool add = true;
-                            foreach(CheckBox checkBox in (item as TreeViewItem).Items)
+                            foreach (CheckBox checkBox in (item as TreeViewItem).Items)
                             {
-                                if(checkBox.Content.ToString() == (((sender as Button).Parent as TreeViewItem).Items[1] as TextBox).Text)
+                                if (checkBox.Content.ToString() == (((sender as Button).Parent as TreeViewItem).Items[1] as TextBox).Text)
                                 {
                                     add = false;
                                     break;
                                 }
                             }
 
-                            if(add)
+                            if (add)
                             {
                                 (item as TreeViewItem).Items.Add(new CheckBox()
                                 {
@@ -144,7 +130,7 @@ namespace Endure.Pages
                         }
                     }
                 }
-                if(item is Border)
+                if (item is Border)
                 {
                     StackPanel stackPanel = ((item as Border).Child as StackPanel);
                     stackPanel.Children.Insert(
@@ -162,7 +148,7 @@ namespace Endure.Pages
 
         private TreeViewItem FindCreatedAlterChartViewItem(string name)
         {
-            foreach(TreeViewItem item in AlterChart.Items)
+            foreach (TreeViewItem item in AlterChart.Items)
             {
                 if (item.Header as string == name)
                     return item;
@@ -173,7 +159,7 @@ namespace Endure.Pages
 
         private void Alterebals()
         {
-            foreach(var item in Config.Charts.Charts)
+            foreach (var item in Config.Charts.Charts)
             {
                 AlterChart.Items.Add(CreateAlterChartViewItem(item.Key, item.Value));
             }
@@ -185,11 +171,11 @@ namespace Endure.Pages
             StackPanel chartContent = ((((sender as Button).Parent as TreeViewItem).Items[0] as Border).Child as StackPanel);
             TreeViewItem toRemove = (((sender as Button).Parent as TreeViewItem).Items[1] as TreeViewItem);
 
-            for(int i = 0; i < toRemove.Items.Count; i++)
+            for (int i = 0; i < toRemove.Items.Count; i++)
             {
                 if ((bool)(toRemove.Items[i] as CheckBox).IsChecked)
                 {
-                    for(int j = 1; j < chartContent.Children.Count -1; j++)
+                    for (int j = 1; j < chartContent.Children.Count - 1; j++)
                     {
                         if ((chartContent.Children[j] as TreeViewItem).Header as string == (toRemove.Items[i] as CheckBox).Content as string)
                         {
@@ -204,20 +190,20 @@ namespace Endure.Pages
                 }
             }
 
-            if(!((SolidColorBrush)Config.Charts.Charts[chartName].CanvasBackGround).Color.Equals(((SolidColorBrush)chartContent.Background).Color))
+            if (!((SolidColorBrush)Config.Charts.Charts[chartName].CanvasBackGround).Color.Equals(((SolidColorBrush)chartContent.Background).Color))
             {
                 ((SolidColorBrush)Config.Charts.Charts[chartName].CanvasBackGround).Color = ((SolidColorBrush)chartContent.Background).Color;
                 Config.Charts.UpdateChartColor(chartName, chartContent.Background);
                 Debug.WriteLine("background is updated");
             }
 
-            for(int i = 1; i < chartContent.Children.Count - 1; i++)
+            for (int i = 1; i < chartContent.Children.Count - 1; i++)
             {
                 string input = (chartContent.Children[i] as TreeViewItem).Header.ToString();
                 Brush ellipse = (((chartContent.Children[i] as TreeViewItem).Items[1] as StackPanel).Children[0] as Ellipse).Fill;
                 Brush line = (((chartContent.Children[i] as TreeViewItem).Items[1] as StackPanel).Children[1] as Border).Background;
 
-                if(Config.Charts.Charts[chartName].ChartInputs.Contains(input))
+                if (Config.Charts.Charts[chartName].ChartInputs.Contains(input))
                 {
                     int index = Config.Charts.Charts[chartName].ChartInputs.IndexOf(input);
                     if (!((SolidColorBrush)Config.Charts.Charts[chartName].Ellipses[index]).Color.Equals(((SolidColorBrush)ellipse).Color) &&
@@ -228,12 +214,12 @@ namespace Endure.Pages
                         Config.Charts.UpdateChartInputColor(chartName, input, ellipse);
                         Config.Charts.UpdateChartInputColor(chartName, input, line, 3);
                     }
-                    else if(!((SolidColorBrush)Config.Charts.Charts[chartName].Ellipses[index]).Color.Equals(((SolidColorBrush)ellipse).Color))
+                    else if (!((SolidColorBrush)Config.Charts.Charts[chartName].Ellipses[index]).Color.Equals(((SolidColorBrush)ellipse).Color))
                     {
                         ((SolidColorBrush)Config.Charts.Charts[chartName].Ellipses[index]).Color = ((SolidColorBrush)ellipse).Color;
                         Config.Charts.UpdateChartInputColor(chartName, input, ellipse);
                     }
-                    else if(!((SolidColorBrush)Config.Charts.Charts[chartName].Lines[index]).Color.Equals(((SolidColorBrush)line).Color))
+                    else if (!((SolidColorBrush)Config.Charts.Charts[chartName].Lines[index]).Color.Equals(((SolidColorBrush)line).Color))
                     {
                         ((SolidColorBrush)Config.Charts.Charts[chartName].Lines[index]).Color = ((SolidColorBrush)line).Color;
                         Config.Charts.UpdateChartInputColor(chartName, input, line, 3);
@@ -243,7 +229,7 @@ namespace Endure.Pages
                 {
                     Config.Charts.AddInputToChart(chartName, input, ellipse, line);
                 }
-                
+
             }
 
             Debug.WriteLine(chartName);
@@ -294,13 +280,13 @@ namespace Endure.Pages
 
         private void On_ValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e)
         {
-            if(sender is Slider)
+            if (sender is Slider)
             {
-                if((sender as Slider).Parent is TreeViewItem)
+                if ((sender as Slider).Parent is TreeViewItem)
                 {
-                    if(((sender as Slider).Parent as TreeViewItem).Parent is StackPanel)
+                    if (((sender as Slider).Parent as TreeViewItem).Parent is StackPanel)
                     {
-                        ((SolidColorBrush)(((sender as Slider).Parent as TreeViewItem).Parent as StackPanel).Background).Color = Color.FromArgb(0xff, 
+                        ((SolidColorBrush)(((sender as Slider).Parent as TreeViewItem).Parent as StackPanel).Background).Color = Color.FromArgb(0xff,
                             (byte)(((sender as Slider).Parent as TreeViewItem).Items[0] as Slider).Value,
                             (byte)(((sender as Slider).Parent as TreeViewItem).Items[1] as Slider).Value,
                             (byte)(((sender as Slider).Parent as TreeViewItem).Items[2] as Slider).Value);
@@ -316,7 +302,7 @@ namespace Endure.Pages
             colorpalette.Items.Add(new CheckBox() { Content = "Duplicate", IsChecked = false }); // index 0
 
             Brush brush = new SolidColorBrush(Color.FromArgb(0xff, 0x88, 0x88, 0x88));
-            StackPanel dotedLine = new StackPanel() { Orientation = Orientation.Horizontal, Background = Brushes.Transparent};   // index 1
+            StackPanel dotedLine = new StackPanel() { Orientation = Orientation.Horizontal, Background = Brushes.Transparent };   // index 1
             dotedLine.Children.Add(new Ellipse() { Width = 5, Height = 5, Fill = brush });
             dotedLine.Children.Add(new Border() { Height = 2, Width = 90, Background = new SolidColorBrush(Color.FromArgb(0xff, 0x88, 0x88, 0x88)) }); // border as line
             dotedLine.Children.Add(new Ellipse() { Width = 5, Height = 5, Fill = brush });
@@ -393,10 +379,10 @@ namespace Endure.Pages
 
         private void Color_ValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e)
         {
-            
-            if((bool)(((sender as Slider).Parent as TreeViewItem).Items[0] as CheckBox).IsChecked)
+
+            if ((bool)(((sender as Slider).Parent as TreeViewItem).Items[0] as CheckBox).IsChecked)
             {
-                switch(((sender as Slider).Parent as TreeViewItem).Items.IndexOf(sender))
+                switch (((sender as Slider).Parent as TreeViewItem).Items.IndexOf(sender))
                 {
                     case 3:
                         (((sender as Slider).Parent as TreeViewItem).Items[7] as Slider).Value = (((sender as Slider).Parent as TreeViewItem).Items[3] as Slider).Value;
@@ -450,9 +436,9 @@ namespace Endure.Pages
                 }
                 else if (obj is TreeViewItem)
                 {
-                    foreach(object item in (obj as TreeViewItem).Items)
+                    foreach (object item in (obj as TreeViewItem).Items)
                     {
-                        if(item is StackPanel)
+                        if (item is StackPanel)
                         {
                             //newImputs = new List<string>();
                             //ellipse = new List<Brush>();
@@ -460,7 +446,7 @@ namespace Endure.Pages
 
                             foreach (object child in (item as StackPanel).Children)
                             {
-                                if(child is TreeViewItem)
+                                if (child is TreeViewItem)
                                 {
                                     newImputs.Add((child as TreeViewItem).Header.ToString());
                                     ellipse.Add(new SolidColorBrush(
@@ -476,16 +462,16 @@ namespace Endure.Pages
                                         (byte)((child as TreeViewItem).Items[9] as Slider).Value)));
                                 }
                             }
-                            
+
                             (item as StackPanel).Children.Clear();
                         }
                     }
                 }
             }
 
-            if(name != string.Empty)
+            if (name != string.Empty)
             {
-                if(!Config.Charts.Charts.ContainsKey(name))
+                if (!Config.Charts.Charts.ContainsKey(name))
                 {
                     Config.Charts.AddChart(name, new SolidColorBrush(((SolidColorBrush)Frozen).Color), newImputs, ellipse, line);
                     AlterChart.Items.Add(CreateAlterChartViewItem(name, Config.Charts.Charts[name]));
@@ -522,23 +508,23 @@ namespace Endure.Pages
         private void Remove_Click(object sender, RoutedEventArgs e)
         {
             List<CheckBox> toRemove = new List<CheckBox>();
-            foreach(var item in ((sender as Button).Parent as StackPanel).Children)
+            foreach (var item in ((sender as Button).Parent as StackPanel).Children)
             {
-                if(item is CheckBox)
+                if (item is CheckBox)
                 {
-                    if((bool)(item as CheckBox).IsChecked)
+                    if ((bool)(item as CheckBox).IsChecked)
                     {
                         toRemove.Add(item as CheckBox);
                     }
                 }
             }
 
-            foreach(var remove in toRemove)
+            foreach (var remove in toRemove)
             {
                 ((sender as Button).Parent as StackPanel).Children.Remove(remove);
                 Config.Charts.RemoveChart(remove.Content.ToString());
                 TreeViewItem alter = FindCreatedAlterChartViewItem(remove.Content.ToString());
-                if(AlterChart.Items.Contains(alter))
+                if (AlterChart.Items.Contains(alter))
                 {
                     AlterChart.Items.Remove(alter);
                 }

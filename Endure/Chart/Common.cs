@@ -1,7 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-using System.Windows.Controls;
+﻿using System.Windows.Controls;
 
 namespace Endure
 {
@@ -9,7 +6,7 @@ namespace Endure
     {
         public Common()
         {
-            RevertToDefoult();
+            RevertToDefault();
         }
 
         public int Offset { get; set; }
@@ -25,18 +22,18 @@ namespace Endure
         public double Height { get; private set; }
         public double Width { get; private set; }
 
-        public void RevertToDefoult()
+        public void RevertToDefault()
         {
-            this.Offset = Defoult.Offset;
-            this.VerticalOffset = Defoult.Offset;
-            this.FontSize = Defoult.FontSize;
-            this.Padding = Defoult.Padding;
-            this.VerticalElements = Defoult.VerticalElements;
-            this.HorizontalElements = Defoult.HorizontalElements;
-            this.Jump = Defoult.Jump;
+            this.Offset = Default.Offset;
+            this.VerticalOffset = Default.Offset;
+            this.FontSize = Default.FontSize;
+            this.Padding = Default.Padding;
+            this.VerticalElements = Default.VerticalElements;
+            this.HorizontalElements = Default.HorizontalElements;
+            this.Jump = Default.Jump;
 
-            this.CurrentMax = Defoult.CurrentMax;
-            this.CurrentMin = Defoult.CurrentMin;
+            this.CurrentMax = Default.CurrentMax;
+            this.CurrentMin = Default.CurrentMin;
         }
 
         public void OnSizeChange(Canvas canvas)
@@ -46,7 +43,7 @@ namespace Endure
         }
     }
 
-    public static class Defoult
+    public static class Default
     {
         public static readonly int Offset = 20;
         public static readonly int VerticalElements = 10;

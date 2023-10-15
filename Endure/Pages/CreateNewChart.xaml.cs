@@ -1,17 +1,9 @@
-﻿using System;
+﻿using Endure.Settings;
 using System.Collections.Generic;
-using System.Text;
 using System.Windows;
 using System.Windows.Controls;
-using System.Windows.Data;
-using System.Windows.Documents;
-using System.Windows.Input;
 using System.Windows.Media;
-using System.Windows.Media.Imaging;
-using System.Windows.Navigation;
 using System.Windows.Shapes;
-
-using Endure.Settings;
 
 namespace Endure.Pages
 {
@@ -57,7 +49,7 @@ namespace Endure.Pages
             TextBlock textBlock = new TextBlock()
             {
                 Text = text,
-                Padding = new Thickness(1,1,1,1),
+                Padding = new Thickness(1, 1, 1, 1),
                 Foreground = Brushes.White,
                 HorizontalAlignment = HorizontalAlignment.Center
             };
@@ -98,8 +90,8 @@ namespace Endure.Pages
         {
             int i = (((sender as Slider).Parent as TreeViewItem).Parent as TreeView).Items.IndexOf((sender as Slider).Parent as TreeViewItem);
             int j = ((sender as Slider).Parent as TreeViewItem).Items.IndexOf(sender);
-            
-            if(j < 4)
+
+            if (j < 4)
             {
                 ((SolidColorBrush)(((VisualInput.Children[i] as StackPanel).Children[1] as StackPanel).Children[0] as Ellipse).Fill).Color = Color.FromArgb(0xff,
                                 (byte)(((sender as Slider).Parent as TreeViewItem).Items[1] as Slider).Value,
@@ -113,7 +105,7 @@ namespace Endure.Pages
                                 (byte)(((sender as Slider).Parent as TreeViewItem).Items[6] as Slider).Value,
                                 (byte)(((sender as Slider).Parent as TreeViewItem).Items[7] as Slider).Value);
             }
-            
+
         }
 
         private StackPanel WrapTheStack(string name)
@@ -141,7 +133,7 @@ namespace Endure.Pages
 
         private void Button_Click_Add_Input(object sender, RoutedEventArgs e)
         {
-            if(NewInput.Text != string.Empty)
+            if (NewInput.Text != string.Empty)
             {
                 AddToInputTree(NewInput.Text);
                 NewInput.Text = "";
@@ -150,15 +142,15 @@ namespace Endure.Pages
 
         private void Button_Click_Save_Chart(object sender, RoutedEventArgs e)
         {
-            if(HeaderPanelBox.Text != string.Empty)
+            if (HeaderPanelBox.Text != string.Empty)
             {
                 List<string> inputs = new List<string>();
                 List<Brush> ellipseBrushes = new List<Brush>();
                 List<Brush> lineBrushes = new List<Brush>();
-                foreach(TreeViewItem tree in InputTree.Items)
+                foreach (TreeViewItem tree in InputTree.Items)
                 {
                     inputs.Add(((tree.Header as Border).Child as TextBlock).Text);
-                    ellipseBrushes.Add(new SolidColorBrush(Color.FromArgb(0xff, 
+                    ellipseBrushes.Add(new SolidColorBrush(Color.FromArgb(0xff,
                         (byte)(tree.Items[1] as Slider).Value,
                         (byte)(tree.Items[2] as Slider).Value,
                         (byte)(tree.Items[3] as Slider).Value)));

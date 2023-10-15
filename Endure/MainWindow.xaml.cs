@@ -1,33 +1,10 @@
-﻿using System;
-using System.IO;
+﻿using Endure.Pages;
+using Endure.Settings;
 using System.Collections.Generic;
-using System.ComponentModel;
-using System.Linq;
-using System.Reflection;
-using System.Security.Cryptography.Xml;
-using System.Text;
-using System.Text.RegularExpressions;
-using System.Text.Json;
-using System.Text.Json.Serialization;
-using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
-using System.Windows.Controls.Primitives;
-using System.Windows.Data;
-using System.Windows.Documents;
 using System.Windows.Input;
 using System.Windows.Media;
-using System.Windows.Media.Imaging;
-using System.Windows.Navigation;
-using System.Windows.Shapes;
-using System.ComponentModel.Design;
-using System.Diagnostics;
-
-
-using Endure.DataAccess;
-using Endure.SubWindows;
-using Endure.Settings;
-using Endure.Pages;
 
 
 namespace Endure
@@ -69,7 +46,7 @@ namespace Endure
 
         public void EmptyTabContent(object sender)
         {
-            if(sender is ChartsConfig)
+            if (sender is ChartsConfig)
             {
                 MainTabFrame.Content = InitChartPage;
             }
@@ -94,7 +71,7 @@ namespace Endure
             {
                 MainTabFrame.Content = MainPages[i];
             }
-                
+
         }
 
         private void Settings_Click(object sender, RoutedEventArgs e)
@@ -109,14 +86,14 @@ namespace Endure
             {
                 SettingsFrame.Content = SettingsTabPages[(sender as Button).TabIndex];
                 SettingsFrame.Visibility = Visibility.Visible;
-                SettingsButton.Background = new SolidColorBrush(Color.FromArgb(0x44,0x00,0x00,0x00));
+                SettingsButton.Background = new SolidColorBrush(Color.FromArgb(0x44, 0x00, 0x00, 0x00));
                 SettingsButton.BorderBrush = SettingsButton.Background;
             }
         }
 
         private void SettingsFrame_PreviewMouseDown(object sender, MouseButtonEventArgs e)
         {
-            if(SettingsFrame.IsVisible && !SettingsFrame.IsMouseOver && !SettingsButton.IsMouseOver)
+            if (SettingsFrame.IsVisible && !SettingsFrame.IsMouseOver && !SettingsButton.IsMouseOver)
             {
                 SettingsFrame.Visibility = Visibility.Collapsed;
                 SettingsButton.Background = Brushes.Transparent;

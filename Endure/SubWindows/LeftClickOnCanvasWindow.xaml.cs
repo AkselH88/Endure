@@ -1,26 +1,9 @@
-﻿using System;
-using System.IO;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Linq;
-using System.Reflection;
-using System.Security.Cryptography.Xml;
-using System.Text;
+﻿using System.Collections.Generic;
 using System.Text.RegularExpressions;
-using System.Text.Json;
-using System.Text.Json.Serialization;
-using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
-using System.Windows.Data;
-using System.Windows.Documents;
 using System.Windows.Input;
 using System.Windows.Media;
-using System.Windows.Media.Imaging;
-using System.Windows.Navigation;
-using System.Windows.Shapes;
-
-using System.ComponentModel.Design;
 
 namespace Endure.SubWindows
 {
@@ -56,7 +39,7 @@ namespace Endure.SubWindows
                 };
                 Inputs.Children.Add(input);
 
-                if(newRow)
+                if (newRow)
                     rowCount++;
 
                 newRow = !newRow;
@@ -113,7 +96,7 @@ namespace Endure.SubWindows
 
         private void Ok_Click(object sender, RoutedEventArgs e)
         {
-            foreach(StackPanel panel in Inputs.Children)
+            foreach (StackPanel panel in Inputs.Children)
             {
                 text.Add(((panel.Children[0] as TextBlock).Text, (panel.Children[1] as TextBox).Text));
             }

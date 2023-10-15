@@ -1,31 +1,13 @@
-﻿using System;
-using System.IO;
+﻿using Endure.DataAccess;
+using Endure.Settings;
+using Endure.SubWindows;
+using System;
 using System.Collections.Generic;
-using System.ComponentModel;
+using System.Diagnostics;
 using System.Linq;
-using System.Reflection;
-using System.Security.Cryptography.Xml;
-using System.Text;
-using System.Text.RegularExpressions;
-using System.Text.Json;
-using System.Text.Json.Serialization;
-using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
-using System.Windows.Data;
-using System.Windows.Documents;
 using System.Windows.Input;
-using System.Windows.Media;
-using System.Windows.Media.Imaging;
-using System.Windows.Navigation;
-using System.Windows.Shapes;
-using System.ComponentModel.Design;
-using System.Diagnostics;
-
-
-using Endure.DataAccess;
-using Endure.SubWindows;
-using Endure.Settings;
 
 namespace Endure.Pages
 {
@@ -34,7 +16,7 @@ namespace Endure.Pages
     /// </summary>
     public partial class ChartPage : Page
     {
-        public Dictionary<string, Chart> charts = new Dictionary<string, Chart>();
+        public Dictionary<string, Chart> charts = new();
         ChartsConfig ChartsConfig;
         public ContextMenu JumpContextMenu { get; set; }
         string selectedDate = string.Empty;
@@ -73,7 +55,7 @@ namespace Endure.Pages
                     charts.Add(table, new Chart(ChartsConfig.Charts[table]));
                     ChartSelect.Items.Add(table);
 
-                    List<string> colomns = new List<string>() { "Date" };
+                    List<string> colomns = new() { "Date" };
                     foreach (string colomn in ChartsConfig.Charts[table].ChartInputs)
                     {
                         colomns.Add(colomn);
@@ -95,7 +77,7 @@ namespace Endure.Pages
 
         public void UpdateChartSelect(string name, bool add)
         {
-            if(add)
+            if (add)
             {
                 charts.Add(name, new Chart(ChartsConfig.Charts[name]));
                 ChartSelect.Items.Add(name);
@@ -109,7 +91,7 @@ namespace Endure.Pages
             }
         }
 
-        
+
 
         private void ChartSelect_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
@@ -148,7 +130,7 @@ namespace Endure.Pages
             }
             else
             {
-                if(charts.Count > 0)
+                if (charts.Count > 0)
                 {
                     currentChart = charts.First().Key;
                     comboBox.SelectedItem = currentChart;
@@ -159,11 +141,12 @@ namespace Endure.Pages
 
         private void AddToChart_Click(object sender, RoutedEventArgs e)
         {
-            string[] date = chosen_date.Text.Split(".");
+            DateTime tempDate = DateTime.Parse(chosen_date.Text);
+            string date = $"{tempDate.Day}.{tempDate.Month}.{tempDate.Year}";
 
             if (!charts[currentChart].HandelNewInput(date, out List<string> textFialds, out bool DateExists, canvas))
             {
-                ErrorWindow errorWindow = new ErrorWindow("Input Error", "You need to insert a number. Ex: <4>, <12.3>, <5,1> etz...");
+                ErrorWindow errorWindow = new("Input Error", "You need to insert a number. Ex: <4>, <12.3>, <5,1> etz...");
                 if (Owner is Window)
                     errorWindow.Owner = (Owner as Window);
                 errorWindow.ShowDialog();
@@ -172,15 +155,15 @@ namespace Endure.Pages
             {
                 if (!DateExists)
                 {
-                    textFialds.Insert(0, chosen_date.Text);
+                    textFialds.Insert(0, date);
                     SQLiteDataAccess.SaveToTable(currentChart, textFialds);
                 }
                 else
                 {
-                    List<string> colomn = new List<string>();
-                    List<string> values = new List<string>();
+                    List<string> colomn = new();
+                    List<string> values = new();
                     colomn.Add("Date");
-                    values.Add(chosen_date.Text);
+                    values.Add(date);
                     for (int i = 0; i < textFialds.Count; i++)
                     {
                         if (textFialds[i] != string.Empty)
@@ -248,9 +231,9 @@ namespace Endure.Pages
             Debug.WriteLine(e.GetPosition(sender as Canvas).X);
             if (charts[currentChart].FindDate(e.GetPosition(sender as Canvas).X, out string date))
             {
-                List<(string, string)> output = new List<(string, string)>();
+                List<(string, string)> output = new();
 
-                LeftClickOnCanvasWindow clickOnCanvas = new LeftClickOnCanvasWindow("Add to Chart", date, ChartsConfig.Charts[currentChart].ChartInputs, output);
+                LeftClickOnCanvasWindow clickOnCanvas = new("Add to Chart", date, ChartsConfig.Charts[currentChart].ChartInputs, output);
                 if (Owner is Window)
                     clickOnCanvas.Owner = (Owner as Window);
 
@@ -258,9 +241,9 @@ namespace Endure.Pages
 
                 if (output.Count > 0)
                 {
-                    if (!charts[currentChart].HandelNewInput(date.Split("."), output, out bool DateExists, canvas))
+                    if (!charts[currentChart].HandelNewInput(date, output, out bool DateExists, canvas))
                     {
-                        ErrorWindow errorWindow = new ErrorWindow("Input Error", "You need to insert a number. Ex: <4>, <12.3>, <5,1> etz...");
+                        ErrorWindow errorWindow = new("Input Error", "You need to insert a number. Ex: <4>, <12.3>, <5,1> etz...");
                         if (Owner is Window)
                             errorWindow.Owner = (Owner as Window);
                         errorWindow.ShowDialog();
@@ -269,9 +252,7 @@ namespace Endure.Pages
                     {
                         if (!DateExists)
                         {
-
-                            List<string> values = new List<string>();
-                            values.Add(date);
+                            List<string> values = new() { date };
                             foreach (var value in output)
                             {
                                 values.Add(value.Item2);
@@ -280,8 +261,8 @@ namespace Endure.Pages
                         }
                         else
                         {
-                            List<string> colomn = new List<string>();
-                            List<string> values = new List<string>();
+                            List<string> colomn = new();
+                            List<string> values = new();
                             colomn.Add("Date");
                             values.Add(date);
                             for (int i = 0; i < output.Count; i++)
@@ -302,8 +283,8 @@ namespace Endure.Pages
 
         private void Canvas_MouseRightButtonDown(object sender, MouseButtonEventArgs e)
         {
-            ErrorWindow errorWindow = new ErrorWindow("On Right Click", "There is no soport for Right Click ATM");
-            if(Owner is Window)
+            ErrorWindow errorWindow = new("On Right Click", "There is no soport for Right Click ATM");
+            if (Owner is Window)
                 errorWindow.Owner = (Owner as Window);
             errorWindow.ShowDialog();
         }
@@ -322,7 +303,7 @@ namespace Endure.Pages
 
         private void ChartSelect_ScrollChanged(object sender, ScrollChangedEventArgs e)
         {
-            if(e.OriginalSource is ScrollViewer)
+            if (e.OriginalSource is ScrollViewer)
             {
                 ScrollViewer viewer = (e.OriginalSource as ScrollViewer);
                 viewer.MaxHeight = ((sender as ComboBox).ActualHeight) * 5;
@@ -353,25 +334,25 @@ namespace Endure.Pages
                 }
             };
 
-            foreach(MenuItem mi in jcm.Items)
+            foreach (MenuItem mi in jcm.Items)
             {
                 mi.Click += Jump_MenuItem_Click;
             }
 
             return jcm;
         }
-        
+
         private void Jump_MenuItem_Click(object sender, RoutedEventArgs e)
         {
-            if(!(sender as MenuItem).IsChecked)
+            if (!(sender as MenuItem).IsChecked)
             {
-                foreach(MenuItem item in ((sender as MenuItem).Parent as ContextMenu).Items)
+                foreach (MenuItem item in ((sender as MenuItem).Parent as ContextMenu).Items)
                 {
-                    if(item.IsChecked)
+                    if (item.IsChecked)
                     {
                         item.IsChecked = false;
                     }
-                    else if(item.Equals(sender))
+                    else if (item.Equals(sender))
                     {
                         item.IsChecked = true;
                         charts[currentChart].NewJumpDictanse(item.Header.ToString());

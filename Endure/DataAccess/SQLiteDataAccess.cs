@@ -1,13 +1,11 @@
-﻿using System;
+﻿using Dapper;
+using System;
 using System.Collections.Generic;
-using System.Text;
-using System.IO;
-using System.Linq;
 using System.Data;
 using System.Data.SQLite;
-using Dapper;
-
 using System.Diagnostics;
+using System.IO;
+using System.Linq;
 
 namespace Endure.DataAccess
 {
@@ -42,10 +40,10 @@ namespace Endure.DataAccess
             using (IDbConnection cnn = new SQLiteConnection(GetConnectionString(db)))
             {
                 string command = $"CREATE TABLE '{table}' (";
-                for(int i = 0; i < colomns.Count; i++)
+                for (int i = 0; i < colomns.Count; i++)
                 {
                     command += $"\"{colomns[i]}\" text";
-                    if (i == colomns.Count -1)
+                    if (i == colomns.Count - 1)
                         command += ");";
                     else
                         command += ", ";
@@ -177,7 +175,7 @@ namespace Endure.DataAccess
             RemoveTable(table, db);
             CreateTable(table, colomns, db);
 
-            foreach(List<string> row in values)
+            foreach (List<string> row in values)
             {
                 SaveToTable(table, row, db);
             }
@@ -200,7 +198,7 @@ namespace Endure.DataAccess
                 for (int i = 0; i < values.Count; i++)
                 {
                     command += $"'{values[i]}'";
-                    if (i == values.Count -1)
+                    if (i == values.Count - 1)
                         command += ");";
                     else
                         command += ", ";

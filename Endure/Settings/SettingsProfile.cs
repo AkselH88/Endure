@@ -1,30 +1,13 @@
-﻿using System;
-using System.IO;
+﻿using Endure.DataAccess;
+using Endure.Pages;
+using System;
 using System.Collections.Generic;
-using System.ComponentModel;
 using System.Linq;
-using System.Reflection;
-using System.Security.Cryptography.Xml;
-using System.Text;
 using System.Text.RegularExpressions;
-using System.Text.Json;
-using System.Text.Json.Serialization;
-using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
-using System.Windows.Data;
-using System.Windows.Documents;
 using System.Windows.Input;
 using System.Windows.Media;
-using System.Windows.Media.Imaging;
-using System.Windows.Navigation;
-using System.Windows.Shapes;
-using System.ComponentModel.Design;
-using System.Diagnostics;
-
-
-using Endure.DataAccess;
-using Endure.Pages;
 
 namespace Endure.Settings
 {
@@ -94,9 +77,9 @@ namespace Endure.Settings
         // returns gray if somthing wrong hapends
         private Color FromString(string toColor)
         {
-            if(toColor.Contains("#"))
+            if (toColor.Contains("#"))
             {
-                toColor = toColor.Remove(0,1);
+                toColor = toColor.Remove(0, 1);
 
                 return Color.FromArgb(Convert.ToByte(toColor.Substring(0, 2), 16),
                                       Convert.ToByte(toColor.Substring(2, 2), 16),
@@ -171,7 +154,7 @@ namespace Endure.Settings
                             if (colomn != "Date")
                             {
                                 Charts[table].Add(colomn, new SolidColorBrush(FromString("#FF000000")), new SolidColorBrush(FromString("#FFFFFFFF")));
-                                SQLiteDataAccess.SaveToTable(ChartColors.Table, new List<string>{table, colomn, "#FF000000", "#FFFFFFFF"}, ConfigFile);
+                                SQLiteDataAccess.SaveToTable(ChartColors.Table, new List<string> { table, colomn, "#FF000000", "#FFFFFFFF" }, ConfigFile);
                             }
                         }
                     }
@@ -201,10 +184,10 @@ namespace Endure.Settings
             Charts["Squats"].Add("Weight", new SolidColorBrush(Color.FromArgb(0xff, 0x62, 0xa1, 0xb1)), new SolidColorBrush(Color.FromArgb(0xff, 0x6f, 0xaf, 0xbf)));
             Charts["Squats"].Add("Reps", new SolidColorBrush(Color.FromArgb(0xff, 0xc2, 0x41, 0x7f)), new SolidColorBrush(Color.FromArgb(0xff, 0xb2, 0x4f, 0x80)));
 
-            if(SQLiteDataAccess.InitDB(ConfigFile))
+            if (SQLiteDataAccess.InitDB(ConfigFile))
             {
                 List<string> tables = SQLiteDataAccess.GetTables(ConfigFile);
-                foreach(string table in tables)
+                foreach (string table in tables)
                 {
                     SQLiteDataAccess.RemoveTable(table, ConfigFile);
                 }
@@ -271,7 +254,7 @@ namespace Endure.Settings
                         lineBrush[i].ToString()
                     }, ConfigFile);
                 }
-                
+
                 if (!GotChartData)
                 {
                     GotChartData = true;
@@ -310,7 +293,7 @@ namespace Endure.Settings
                 SQLiteDataAccess.RemoveTable(name);
                 SQLiteDataAccess.RemoveRow(ChartColors.Table, ChartColors.Colomns[0], name, ConfigFile);
                 SQLiteDataAccess.RemoveRow(ChartColors.CanvasTable, ChartColors.CanvasColomns[0], name, ConfigFile);
-                
+
                 if (Charts.Count == 0)
                 {
                     GotChartData = false;
@@ -351,7 +334,7 @@ namespace Endure.Settings
             Ellipses = ellipseBrush;
             Lines = lineBrush;
 
-            for(int i = 0; i < ChartInputs.Count; i++)
+            for (int i = 0; i < ChartInputs.Count; i++)
             {
                 AddToInputPanel(ChartInputs[i]);
             }
@@ -360,10 +343,11 @@ namespace Endure.Settings
         public void AddToInputPanel(string name)
         {
             StackPanel Items = new StackPanel()
-            { 
+            {
                 Margin = new Thickness()
                 {
-                    Left = 5, Right = 5
+                    Left = 5,
+                    Right = 5
                 },
                 Orientation = Orientation.Vertical,
                 Children =
@@ -400,7 +384,7 @@ namespace Endure.Settings
                     CreateTextBox(name)
                 }
             };
-            
+
             WrapItems.Children.Add(Items);
         }
 

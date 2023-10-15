@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Windows.Controls;
 using System.Windows.Media;
 using System.Windows.Shapes;
@@ -52,7 +51,7 @@ namespace Endure
                     else
                     {
                         KeyDate next = lines.Tail;
-                        while(!FindPoint(Key, next, line))
+                        while (!FindPoint(Key, next, line))
                         {
                             next = lines.GetNext(next);
                         }
@@ -78,13 +77,13 @@ namespace Endure
                             HeadKey = Key;
                         }
                     }
-                    else if(Key > right)
+                    else if (Key > right)
                     {
-                        if(Key < TailKey)
+                        if (Key < TailKey)
                         {
                             TailKey = Key;
                         }
-                        if(Key < HeadKey)
+                        if (Key < HeadKey)
                         {
                             HeadKey = Key;
                         }
@@ -189,9 +188,9 @@ namespace Endure
                         }
                     }
 
-                    if(right < HeadKey)
+                    if (right < HeadKey)
                     {
-                        if(canvas.Children.Contains(lines[HeadKey]))
+                        if (canvas.Children.Contains(lines[HeadKey]))
                         {
                             canvas.Children.Remove(lines[HeadKey]);
                         }
@@ -247,7 +246,7 @@ namespace Endure
 
         public bool DrawTail(KeyDate left, out Line tail)
         {
-            if(TailKey != null && TailKey < left)
+            if (TailKey != null && TailKey < left)
             {
                 tail = lines[TailKey];
                 GetNewSize = true;
@@ -287,7 +286,7 @@ namespace Endure
             key = string.Empty;
             if (Initialized)
             {
-                if(lines.Tail < left && lines.Head >= left)
+                if (lines.Tail < left && lines.Head >= left)
                 {
                     key = TailKey.ToString();
                     return true;
@@ -304,14 +303,14 @@ namespace Endure
             double P = (lines[TailKey].X2 - x0) / (DistanseX(TailKey, lines.GetNext(TailKey)) * pxShifted);
             lines[TailKey].X1 = lines[TailKey].X2 - DistanseX(TailKey, lines.GetNext(TailKey)) * pxShifted * P;
 
-            if(lines[TailKey].Y2 > y)
+            if (lines[TailKey].Y2 > y)
             {
                 double y0 = lines[TailKey].Y2 - y;
                 lines[TailKey].Y1 = lines[TailKey].Y2 - y0 * P;
             }
-            else if(lines[TailKey].Y2 < y)
+            else if (lines[TailKey].Y2 < y)
             {
-                double y0 =  y - lines[TailKey].Y2;
+                double y0 = y - lines[TailKey].Y2;
                 lines[TailKey].Y1 = lines[TailKey].Y2 + y0 * P;
             }
             else
@@ -325,9 +324,9 @@ namespace Endure
             key = string.Empty;
             if (Initialized)
             {
-                if(lines.Head > right && lines.Tail <= right)
+                if (lines.Head > right && lines.Tail <= right)
                 {
-                    if(lines.IsHead(HeadKey) || HeadKey > right)
+                    if (lines.IsHead(HeadKey) || HeadKey > right)
                     {
                         key = HeadKey.ToString();
                     }
@@ -335,7 +334,7 @@ namespace Endure
                     {
                         key = lines.GetNext(HeadKey).ToString();
                     }
-                    
+
                     return true;
                 }
             }
@@ -349,7 +348,7 @@ namespace Endure
                 {
                     lines[HeadKey].X2 = x0 + DistanseX(left, lines.GetNext(HeadKey)) * pxShifted;
                 }
-                else if(HeadKey > right)
+                else if (HeadKey > right)
                 {
                     lines[lines.GetPrevius(HeadKey)].X2 = x0 + DistanseX(left, HeadKey) * pxShifted;
                     lines[lines.GetPrevius(HeadKey)].Y2 = y;
@@ -358,7 +357,7 @@ namespace Endure
                 {
                     lines[HeadKey].X2 = lines[HeadKey].X1 + DistanseX(HeadKey, lines.GetNext(HeadKey)) * pxShifted;
                 }
-                    
+
                 lines[HeadKey].Y2 = y;
             }
             else
@@ -366,7 +365,7 @@ namespace Endure
                 lines[lines.GetPrevius(HeadKey)].X2 = x0 + DistanseX(left, HeadKey) * pxShifted;
                 lines[lines.GetPrevius(HeadKey)].Y2 = y;
             }
-            
+
         }
 
         private int DistanseX(KeyDate date1, KeyDate date2)

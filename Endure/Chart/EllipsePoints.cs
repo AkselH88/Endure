@@ -1,11 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Windows.Controls;
 using System.Windows.Media;
 using System.Windows.Shapes;
-
-using System.Diagnostics;
 
 
 namespace Endure
@@ -13,7 +12,7 @@ namespace Endure
     public class EllipsePoints
     {
         Common common;
-        readonly Dictionary<string, Ellipse> ellipses = new Dictionary<string, Ellipse>();
+        readonly Dictionary<string, Ellipse> ellipses = new();
         readonly LinesBetweenPoints lines;// = new LinesBetweenPoints();
         private (Brush, Brush) brushes;
         private bool Initialized = false;
@@ -26,8 +25,8 @@ namespace Endure
         public int CurrentMax { get; private set; }
         public int CurrentMin { get; private set; }
         public bool Update { get; private set; }
-        public bool changeMax { get; private set; }
-        public bool changeMin { get; private set; }
+        public bool ChangeMax { get; private set; }
+        public bool ChangeMin { get; private set; }
 
         readonly int Diameter = 5;
         readonly double Radius = 2.5;
@@ -53,16 +52,15 @@ namespace Endure
             };
         }
 
-        public bool ContainsDate(string[] date)
+        public bool ContainsDate(string date)
         {
-            string FullDate = $"{int.Parse(date[0])}.{int.Parse(date[1])}.{date[2]}";
-            return ellipses.ContainsKey(FullDate);
+            return ellipses.ContainsKey(date);
         }
 
-        public void Add(string[] date, string[] text, List<string> horizontalText, List<double> horizontalPositions, Canvas canvas)
+        public void Add(string date, string[] text, List<string> horizontalText, List<double> horizontalPositions, Canvas canvas)
         {
-            string FullDate = $"{int.Parse(date[0])}.{int.Parse(date[1])}.{date[2]}";
-            string ToolTip = $"{date[0]}, {text[0]}.{text[1]}";
+            string FullDate = date;
+            string ToolTip = $"{date.Split(".")[0]}, {text[0]}.{text[1]}";
 
             Debug.WriteLine(ToolTip);
 
@@ -105,7 +103,7 @@ namespace Endure
                     SetEllipsePosition(ellipses[FullDate], FullDate, horizontalPositions[horizontalText.IndexOf(FullDate)], canvas);
 
                     string next = lines.GetNext(FullDate);
-                    if(canvas.Children.Contains(ellipses[next]))
+                    if (canvas.Children.Contains(ellipses[next]))
                     {
                         canvas.Children.Remove(ellipses[next]);
                         canvas.Children.Add(ellipses[next]);
@@ -118,7 +116,7 @@ namespace Endure
             UpdateFrontAndBack();
             NeedSizeUpdate();
 
-            if(!Initialized)
+            if (!Initialized)
             {
                 Initialized = true;
             }
@@ -127,7 +125,7 @@ namespace Endure
         private void SetEllipsePosition(Ellipse ellipse, string key, double position, Canvas canvas)
         {
             string[] text = ellipse.ToolTip.ToString().Split(" ")[1].Split(".");
-            double Top = ((common.Height - 2 * common.Offset) / (common.CurrentMax - common.CurrentMin)) * (common.CurrentMax - double.Parse($"{text[0]},{text[1]}")) + common.FontSize + Radius;
+            double Top = ((common.Height - 2 * common.Offset) / (common.CurrentMax - common.CurrentMin)) * (common.CurrentMax - double.Parse($"{text[0]}.{text[1]}")) + common.FontSize + Radius;
             double Left = position + common.FontSize;
 
             lines.Add(key, Right, Left, Top + Radius, canvas);
@@ -139,7 +137,7 @@ namespace Endure
         private void SetEllipsePosition(Ellipse ellipse, string key, double position)
         {
             string[] text = ellipse.ToolTip.ToString().Split(" ")[1].Split(".");
-            double Top = ((common.Height - 2 * common.Offset) / (common.CurrentMax - common.CurrentMin)) * (common.CurrentMax - double.Parse($"{text[0]},{text[1]}")) + common.FontSize + Radius;
+            double Top = ((common.Height - 2 * common.Offset) / (common.CurrentMax - common.CurrentMin)) * (common.CurrentMax - double.Parse($"{text[0]}.{text[1]}")) + common.FontSize + Radius;
             double Left = position + common.FontSize;
 
             lines.OnSizeChange(key, Left, Top + Radius);
@@ -235,7 +233,7 @@ namespace Endure
         private double TopLine(string key)
         {
             string[] text = ellipses[key].ToolTip.ToString().Split(" ")[1].Split(".");
-            return ((common.Height - 2 * common.Offset) / (common.CurrentMax - common.CurrentMin)) * (common.CurrentMax - double.Parse($"{text[0]},{text[1]}")) + common.FontSize + 2 * Radius;
+            return ((common.Height - 2 * common.Offset) / (common.CurrentMax - common.CurrentMin)) * (common.CurrentMax - double.Parse($"{text[0]}.{text[1]}")) + common.FontSize + 2 * Radius;
         }
 
         private void UpdateFrontAndBack()
@@ -254,8 +252,8 @@ namespace Endure
         private void RevertSizeUpdateBoolians()
         {
             Update = false;
-            changeMax = false;
-            changeMin = false;
+            ChangeMax = false;
+            ChangeMin = false;
         }
         private void NeedSizeUpdate()
         {
@@ -309,7 +307,7 @@ namespace Endure
                     else
                         CurrentMax = tempMax;
 
-                    changeMax = true;
+                    ChangeMax = true;
                 }
 
                 int tempMin = RetriveNewNum(min, -1);
@@ -320,12 +318,12 @@ namespace Endure
                     else
                         CurrentMin = tempMin;
 
-                    changeMin = true;
+                    ChangeMin = true;
                 }
                 lines.ResetNewSize();
             }
 
-            Update = changeMax || changeMin;
+            Update = ChangeMax || ChangeMin;
         }
 
         private int RetriveNewNum(int current, int direction)
@@ -356,11 +354,11 @@ namespace Endure
             }
 
             if (direction < 0)
-                if(newNum + 10 < current)
+                if (newNum + 10 < current)
                     newNum += 10;
-            else if (direction > 0)
-                if(newNum - 10 > current)
-                    newNum -= 10;
+                else if (direction > 0)
+                    if (newNum - 10 > current)
+                        newNum -= 10;
 
             return newNum;
         }

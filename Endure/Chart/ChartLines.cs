@@ -1,8 +1,5 @@
 ﻿using System.Collections.Generic;
-using System.Collections.Immutable;
-using System.Linq;
 using System.Windows.Controls;
-using System.Windows.Documents;
 using System.Windows.Media;
 using System.Windows.Shapes;
 
@@ -14,7 +11,7 @@ namespace Endure
 
         readonly List<Line> Lines = new List<Line>();
         private Pair<Line, Line> XYLines;
-        
+
         private bool Initialized = false;
         public bool DrawLines { get; set; }
 
@@ -148,7 +145,7 @@ namespace Endure
                 XYLines.Second.X2 = common.VerticalStartPos;
                 XYLines.Second.Y2 = common.Height - common.Offset;
             }
-            if(DrawLines)
+            if (DrawLines)
             {
                 UpdateLines(VertivalPosition, HorizontalPosition);
             }

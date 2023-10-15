@@ -1,9 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
-using System.Runtime.CompilerServices;
-using System.Text;
-using System.Windows.Documents;
 
 namespace Endure
 {
@@ -98,9 +94,9 @@ namespace Endure
 
         public void Remove(TKey key)
         {
-            if(keys.ContainsKey(key))
+            if (keys.ContainsKey(key))
             {
-                if(IsTail(key) && IsHead(key))
+                if (IsTail(key) && IsHead(key))
                 {
                     Head = keys[key].First;
                     Tail = keys[key].Second;
@@ -110,7 +106,7 @@ namespace Endure
                     keys[keys[key].First].Second = keys[key].Second;
                     Head = keys[key].First;
                 }
-                else if(IsTail(key))
+                else if (IsTail(key))
                 {
                     keys[keys[key].Second].First = keys[key].First;
                     Tail = keys[key].Second;
@@ -157,7 +153,7 @@ namespace Endure
         /// </summary>
         public bool InsertFront(TKey origin, TKey currentKey, TValue value)
         {
-            if(keys.ContainsKey(origin))
+            if (keys.ContainsKey(origin))
             {
                 if (keys.ContainsKey(currentKey))
                 {
@@ -172,7 +168,7 @@ namespace Endure
                         keys[currentKey].First = origin;
                         keys[currentKey].Second = keys[origin].Second;
 
-                        if(keys.ContainsKey(keys[origin].Second))
+                        if (keys.ContainsKey(keys[origin].Second))
                         {
                             keys[keys[origin].Second].First = currentKey;
                         }
@@ -182,11 +178,11 @@ namespace Endure
                 }
                 else
                 {
-                    if(origin.Equals(Head))
+                    if (origin.Equals(Head))
                     {
                         pairs.Add(currentKey, value);
                         keys.Add(currentKey, new Pair<TKey, TKey>() { First = origin });
-                        
+
                         keys[origin].Second = currentKey;
                         Head = currentKey;
                     }

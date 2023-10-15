@@ -1,22 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.ComponentModel;
-using System.Linq;
-using System.Reflection;
-using System.Security.AccessControl;
-using System.Security.Cryptography.Xml;
-using System.Text;
-using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
-using System.Windows.Data;
-using System.Windows.Documents;
-using System.Windows.Input;
 using System.Windows.Media;
-using System.Windows.Media.Imaging;
-using System.Windows.Navigation;
-using System.Windows.Shapes;
-using System.Diagnostics;
 
 namespace Endure
 {
@@ -26,7 +12,7 @@ namespace Endure
 
         readonly List<TextBlock> verticalTextBlock = new List<TextBlock>();
         readonly List<TextBlock> horizontalTextBlock = new List<TextBlock>();
-        
+
         public List<double> VertivalTextPosition { get; private set; }
         public List<string> HorizontalText { get; private set; }
         public List<double> HorizontalTextPositions { get; private set; }
@@ -41,7 +27,7 @@ namespace Endure
 
         public void Initialize(Common common, Canvas canvas)
         {
-            if(!Initialized)
+            if (!Initialized)
             {
                 this.common = common;
                 DayOffset = -common.HorizontalElements;
@@ -115,7 +101,7 @@ namespace Endure
 
         public void ReaplyTextOnCanvas(Common common, Canvas canvas)
         {
-            if(Initialized)
+            if (Initialized)
             {
                 foreach (TextBlock textBlock in verticalTextBlock)
                 {
@@ -221,8 +207,8 @@ namespace Endure
 
         public void OnSizeChange()
         {
-            if(Initialized)
-            { 
+            if (Initialized)
+            {
                 double height = common.Height - 2 * common.Offset;
                 double width = common.Width - (common.Offset + common.VerticalStartPos);
 
